@@ -1,5 +1,6 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { BinList, CacheGroup, DiskDrive, DiskListing, DiskRow, DiskStart, LargeFile, LargeScan } from '../api';
+import { Automate } from '../automate-button';
 import { errorText, formatAge, formatBytes } from '../format';
 import { Icon } from '../icon';
 import { SystemService } from '../system.service';
@@ -11,7 +12,7 @@ const SHOWN_IN_DIALOG = 15;
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 
 @Component({
-  imports: [Icon],
+  imports: [Icon, Automate],
   selector: 'app-disk',
   templateUrl: './disk.html',
   styleUrl: './disk.scss',

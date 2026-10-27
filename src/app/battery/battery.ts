@@ -1,5 +1,6 @@
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { BatteryNow, BatteryReport } from '../api';
+import { Automate } from '../automate-button';
 import { errorText, formatMinutes } from '../format';
 import { Icon } from '../icon';
 import { SystemService } from '../system.service';
@@ -7,7 +8,7 @@ import { SystemService } from '../system.service';
 const POLL_MS = 15000;
 
 @Component({
-  imports: [Icon],
+  imports: [Icon, Automate],
   selector: 'app-battery',
   templateUrl: './battery.html',
   styleUrl: './battery.scss',

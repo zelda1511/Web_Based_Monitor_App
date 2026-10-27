@@ -1,11 +1,12 @@
-const { app, BrowserWindow, dialog, ipcMain, nativeTheme, shell } = require('electron');
+const { app, BrowserWindow, Menu, Notification, Tray, dialog, ipcMain, nativeImage, nativeTheme, powerMonitor, shell } = require('electron');
+const crypto = require('crypto');
 const fs = require('fs/promises');
 const path = require('path');
-const { getOverview, getLive } = require('./system');
+const { getOverview, getLive, getDisks } = require('./system');
 const { listSoftware, folderOf } = require('./software');
 const { getProcesses, endTasks } = require('./processes');
 const { listStartup, setStartup } = require('./startup');
-const { scanCleanup, deleteCleanup } = require('./cleanup');
+const { scanCleanup, deleteCleanup, defaultTargets, scanTarget, deleteTarget } = require('./cleanup');
 const { listDrivers, scanDriverUpdates, LINKS } = require('./drivers');
 const { listAppUpdates, searchApps, appDetails, installApp, upgradeApp } = require('./winget');
 const { uninstallApp, getSnapshot } = require('./uninstall');
@@ -20,8 +21,16 @@ const disk = require('./disk');
 const { scanLarge, trashLarge, annotate } = require('./downloads');
 const { listBin, emptyBin } = require('./recyclebin');
 const { discoverCaches, clearCaches } = require('./caches');
-const { withLock } = require('./lock');
-const { createLogger } = require('./log');
+const { withLock, isBusy } = require('./lock');
+const { createLogger, defaultDir } = require('./log');
+const cleaning = require('./busy');
+const { createSettings } = require('./settings');
+const { createActivity } = require('./activity');
+const { createNotifier, ROUTES } = require('./notify');
+const { createAutomation, makeCleaner } = require('./automation');
+
+// A test copy keeps its settings, single-instance lock and cache in its own folder, so it never touches (or is stopped by) your own copy.
+if (process.env.WEBASE_DATA_DIR) app.setPath('userData', path.resolve(process.env.WEBASE_DATA_DIR));
 
 // Errors go to %LOCALAPPDATA%\WebaseSystemMonitor\logs\app.log (channel and message only, never the request). 'uncaughtExceptionMonitor'
 // only watches, so Electron still shows its own error box.
@@ -54,7 +63,11 @@ ipcMain.handle('proc:end', (_e, pids) => endTasks(pids));
 ipcMain.handle('startup:list', listStartup);
 ipcMain.handle('startup:set', (_e, id, enabled) => setStartup(id, enabled));
 ipcMain.handle('clean:scan', () => scanCleanup());
-ipcMain.handle('clean:delete', (_e, ids) => deleteCleanup(ids));
+ipcMain.handle('clean:delete', (_e, ids) => {
+  const release = cleaning.acquire('manual'); // never together with the automatic cleaning
+  if (!release) throw new Error('An automatic cleaning is running right now. Try again in a minute.');
+  return deleteCleanup(ids).finally(release);
+});
 ipcMain.handle('apps:updates', listAppUpdates);
 ipcMain.handle('apps:search', (_e, query) => searchApps(query));
 ipcMain.handle('apps:details', (_e, id) => appDetails(id));
@@ -174,25 +187,197 @@ ipcMain.handle('ui:setTheme', (_e, mode) => {
   if (['light', 'dark', 'system'].includes(mode)) nativeTheme.themeSource = mode;
 });
 
-app.whenReady().then(() => {
-  const win = new BrowserWindow({
+// ---- Automation: settings, the tray, warnings and the cleaning of old temp files (see PLAN.md, Phase 14) ----
+
+const gotLock = app.requestSingleInstanceLock(); // a second copy hands over to the running one
+if (!gotLock) app.quit();
+const settings = createSettings({ file: path.join(app.getPath('userData'), 'settings.json') });
+settings.load();
+// with WEBASE_DATA_DIR (test copies) the activity list stays in that folder too, so a test never writes into the real one
+const activity = createActivity({ file: path.join(process.env.WEBASE_DATA_DIR ? path.resolve(process.env.WEBASE_DATA_DIR) : defaultDir(), 'automation.jsonl') });
+const autoCleaner = makeCleaner({ defaultTargets, scanTarget, deleteTarget });
+const iconPath = path.join(__dirname, '../build/icon.png');
+const INDEX = path.join(__dirname, '../dist/webase-app/browser/index.html');
+let win = null;
+let tray = null;
+let quitting = false;
+let automation = null;
+let previewToken = null; // the cleaning can only be switched on after a preview was made (and confirmed in the window)
+
+function createWindow(route) {
+  win = new BrowserWindow({
     width: 1200,
     height: 780,
     minWidth: 960,
     minHeight: 600,
     show: false,
     autoHideMenuBar: true,
-    icon: path.join(__dirname, '../build/icon.png'),
+    icon: iconPath,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
     },
   });
-  win.once('ready-to-show', () => win.show());
-  win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
-  win.webContents.on('will-navigate', (e) => e.preventDefault());
-  win.loadFile(path.join(__dirname, '../dist/webase-app/browser/index.html'));
+  const mine = win;
+  mine.once('ready-to-show', () => mine.show());
+  mine.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  mine.webContents.on('will-navigate', (e) => e.preventDefault());
+  // Closing to the tray frees the window (and its memory). While an install or a cleaning is running the window is only hidden, so the work is not cut off.
+  mine.on('close', (e) => {
+    if (!quitting && settings.get().tray && (isBusy() || cleaning.heldBy())) {
+      e.preventDefault();
+      mine.hide();
+    }
+  });
+  mine.on('closed', () => { if (win === mine) win = null; });
+  // the page is created already pointing at the right route: a message sent before it has loaded would be lost
+  mine.loadFile(INDEX, route && ROUTES.includes(route) ? { hash: route } : undefined);
+}
+
+// With WEBASE_DATA_DIR (test copies) a few lifecycle lines go to trace.log in that folder; nothing is traced otherwise.
+const trace = process.env.WEBASE_DATA_DIR
+  ? (m) => { try { require('fs').appendFileSync(path.join(path.resolve(process.env.WEBASE_DATA_DIR), 'trace.log'), `${new Date().toISOString()} ${m}\n`); } catch { /* tracing must never break the app */ } }
+  : () => {};
+
+function showWindow(route) {
+  trace(`showWindow ${route ?? ''} window=${win && !win.isDestroyed() ? 'exists' : 'none'}`);
+  if (win && !win.isDestroyed()) {
+    if (win.isMinimized()) win.restore();
+    win.show();
+    win.focus();
+    if (route && ROUTES.includes(route)) win.webContents.send('app:navigate', route);
+    return;
+  }
+  createWindow(route);
+}
+
+const notifier = createNotifier({ Notification, getTray: () => tray, settings, activity, onOpen: (route) => showWindow(route), log, trace });
+
+// A menu action: traced (test copies) and never allowed to throw into the main process.
+const menuAction = (name, fn) => (item) => {
+  trace(`tray menu: ${name}${item?.checked === undefined ? '' : ` checked=${item.checked}`}`);
+  try { fn(item); } catch (e) { log.error(`tray menu ${name}`, e); }
+};
+
+function trayMenu() {
+  const s = settings.get();
+  const paused = Date.now() < s.quietUntil;
+  return Menu.buildFromTemplate([
+    { label: 'Open Webase System Monitor', click: menuAction('open', () => showWindow()) },
+    { type: 'separator' },
+    { label: 'Automation', type: 'checkbox', checked: s.automation, click: menuAction('automation', (item) => applyPatch({ automation: item.checked })) },
+    { label: paused ? 'Resume warnings' : 'Pause warnings for 1 hour', click: menuAction(paused ? 'resume' : 'pause', () => applyPatch({ quietUntil: paused ? 0 : Date.now() + 3600_000 })) },
+    { type: 'separator' },
+    { label: 'Quit', click: menuAction('quit', () => { quitting = true; app.quit(); }) },
+  ]);
+}
+
+function syncTray() {
+  const s = settings.get();
+  if (s.tray && !tray) {
+    tray = new Tray(nativeImage.createFromPath(iconPath).resize({ width: 32, height: 32 }));
+    tray.setToolTip('Webase System Monitor');
+    tray.on('click', () => { trace('tray click'); showWindow(); });
+    tray.on('right-click', () => trace('tray right-click'));
+  } else if (!s.tray && tray) {
+    tray.destroy();
+    tray = null;
+  }
+  tray?.setContextMenu(trayMenu());
+}
+
+// Start with Windows: a value in the current user's Run key that starts this exe hidden in the tray. Only the packaged exe registers (a development run would
+// register Electron itself). It is registered again at every start, so a moved folder is corrected as soon as the app is run from its new place.
+const LOGIN = { path: process.execPath, args: ['--hidden'] };
+const LOGIN_NAME = 'Webase System Monitor'; // the value's name in the Run key (without it Electron names it after its own default)
+
+function syncLoginItem() {
+  if (!app.isPackaged) return;
+  const on = settings.get().startWithWindows;
+  app.setLoginItemSettings({ openAtLogin: on, name: LOGIN_NAME, ...LOGIN });
+}
+
+// Windows only reports the entry when asked with the same path and arguments it was registered with.
+function loginItemOn() {
+  const s = app.getLoginItemSettings(LOGIN);
+  return s.openAtLogin || (s.launchItems ?? []).some((i) => i.enabled !== false);
+}
+
+// One place where a change takes effect: stored, then the tray, the start-up entry and the menu follow.
+function applyPatch(patch, opts) {
+  settings.patch(patch, opts);
+  syncTray();
+  syncLoginItem();
+  return currentAutomation();
+}
+
+function currentAutomation() {
+  return {
+    settings: settings.pub(),
+    status: automation?.status() ?? { master: false, jobs: {} },
+    recent: activity.recent(40),
+    loginItem: app.isPackaged ? loginItemOn() : null,
+    packaged: app.isPackaged,
+    trayRunning: !!tray,
+  };
+}
+
+ipcMain.handle('auto:get', () => currentAutomation());
+ipcMain.handle('auto:set', (_e, patch) => {
+  const p = patch && typeof patch === 'object' ? { ...patch } : {};
+  if ('quietUntil' in p) p.quietUntil = Number.isFinite(p.quietUntil) ? Math.min(Math.max(0, p.quietUntil), Date.now() + 24 * 3600_000) : 0;
+  return applyPatch(p); // only the allow-listed, checked keys take effect (settings.js); the cleaning cannot be switched on from here
+});
+ipcMain.handle('auto:test', () => notifier.notify({ id: 'test', title: 'Webase test notification', body: 'If you can read this, warnings will reach you.', route: '/automation' }));
+ipcMain.handle('auto:cleanPreview', async () => {
+  const targets = await autoCleaner.preview();
+  previewToken = { id: crypto.randomUUID(), at: Date.now() };
+  return { token: previewToken.id, targets };
+});
+ipcMain.handle('auto:cleanEnable', (_e, token) => {
+  if (!previewToken || typeof token !== 'string' || token !== previewToken.id || Date.now() - previewToken.at > 10 * 60_000) throw new Error('Look at what would be cleaned first, then confirm.');
+  previewToken = null;
+  return applyPatch({ clean: { on: true } }, { internal: true });
 });
 
-app.on('window-all-closed', () => app.quit());
+// A way to quit that does not depend on the tray menu. It refuses while an install or a cleaning is running, so that work is not cut off.
+ipcMain.handle('app:quit', () => {
+  if (isBusy() || cleaning.heldBy()) throw new Error('An install or a cleaning is running. Wait for it to finish, then quit.');
+  trace('quit asked from the window');
+  quitting = true;
+  app.quit();
+});
+
+app.on('second-instance', () => showWindow());
+app.on('before-quit', () => { quitting = true; });
+
+app.whenReady().then(() => {
+  if (!gotLock) return;
+  automation = createAutomation({
+    settings,
+    notify: notifier.notify,
+    readers: {
+      disks: getDisks,
+      battery: getBattery,
+      updates: listAppUpdates,
+      startup: listStartup,
+      onBattery: () => powerMonitor.isOnBatteryPower(),
+      idleSeconds: () => powerMonitor.getSystemIdleTime(),
+    },
+    cleaner: autoCleaner,
+    activity,
+    ownEntry: (e) => /webase system monitor/i.test(`${e.name} ${e.command}`),
+    log,
+  });
+  syncTray();
+  syncLoginItem();
+  automation.start();
+  // started by Windows at sign-in (--hidden) with the tray on: no window until the tray icon or a warning is clicked
+  if (!(process.argv.includes('--hidden') && settings.get().tray)) createWindow();
+});
+
+// In tray mode the app keeps running (watching) when the last window is closed.
+app.on('window-all-closed', () => {
+  if (!settings.get().tray || quitting) app.quit();
+});

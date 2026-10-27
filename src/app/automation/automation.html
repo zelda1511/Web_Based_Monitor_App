@@ -1,0 +1,183 @@
+<div class="page">
+  <header class="page-head">
+    <div>
+      <h1>Automation</h1>
+      <p class="text-body-secondary">Warnings that only look, and the cleaning of old temp files, running by themselves. Everything is off until you switch it on, and nothing runs while the Automation switch is off.</p>
+    </div>
+  </header>
+
+  @if (auto.error(); as e) {
+    <div class="alert alert-danger" role="alert">{{ e }}</div>
+  }
+
+  @if (s(); as st) {
+    <section class="panel panel-body mb-3 master" [class.on]="st.automation">
+      <div class="form-check form-switch">
+        <input id="master" class="form-check-input" type="checkbox" role="switch" [checked]="st.automation" (change)="set({ automation: $any($event.target).checked })" />
+        <label class="form-check-label" for="master"><strong>Automation is {{ st.automation ? 'on' : 'off' }}</strong></label>
+      </div>
+      <p class="text-body-secondary mb-0 mt-2">
+        @if (st.automation) {
+          The items you switched on below are running while this app is open or in the tray. Pages with something to automate show an "Automate this" button.
+        } @else {
+          Nothing runs, so there are no warnings and no cleaning. Your choices below are kept for when you switch it on again.
+        }
+      </p>
+    </section>
+
+    <section class="panel panel-body mb-3">
+      <h2 class="panel-title"><app-icon name="monitor" />Running in the background</h2>
+      <p class="text-body-secondary">Warnings only work while the app is running, open or in the tray.</p>
+      <div class="form-check form-switch mb-2">
+        <input id="tray" class="form-check-input" type="checkbox" role="switch" [checked]="st.tray" (change)="set({ tray: $any($event.target).checked })" />
+        <label class="form-check-label" for="tray">Keep running in the tray when I close the window</label>
+      </div>
+      <div class="form-check form-switch mb-2">
+        <input id="startup" class="form-check-input" type="checkbox" role="switch" [checked]="st.startWithWindows" [disabled]="!auto.state()?.packaged" (change)="set({ startWithWindows: $any($event.target).checked })" />
+        <label class="form-check-label" for="startup">Start with Windows, hidden in the tray</label>
+      </div>
+      @if (!auto.state()?.packaged) {
+        <p class="small text-body-secondary mb-0">Starting with Windows only works in the extracted app, not in a development run.</p>
+      } @else if (st.startWithWindows && auto.state()?.loginItem === false) {
+        <p class="small text-danger mb-0">Windows has no start-up entry for this app yet. Restart the app once to register it.</p>
+      } @else {
+        <p class="small text-body-secondary mb-0">This adds one entry for this app to your Windows startup list, pointing at the folder the app runs from: if you move the folder, run the app once from its new place. It shows on the Startup page, and switching it off removes it.</p>
+      }
+      <div class="mt-3 d-flex flex-wrap align-items-center gap-2">
+        <button type="button" class="btn btn-quiet btn-sm" (click)="quit()">Quit Webase System Monitor</button>
+        <span class="small text-body-secondary">Closes it completely, including the tray icon. It is also in the tray menu.</span>
+      </div>
+    </section>
+
+    <section class="panel panel-body mb-3">
+      <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+        <h2 class="panel-title mb-0 me-auto"><app-icon name="bell" />Warnings</h2>
+        <button type="button" class="btn btn-quiet btn-sm" (click)="pause()">{{ paused() ? 'Resume warnings' : 'Pause warnings for 1 hour' }}</button>
+        <button type="button" class="btn btn-quiet btn-sm" (click)="test()">Send a test notification</button>
+      </div>
+      @if (testResult(); as r) {
+        <p class="small text-body-secondary mb-2" role="status">{{ r }}</p>
+      }
+      <p class="small text-body-secondary">Warnings only look: nothing is changed on your PC. Click a pop-up while it is showing to open the page it is about. Windows' Focus Assist or Do Not Disturb can hide a pop-up, and an old one in the notification list may not open the app, but every warning is also listed under Activity below.</p>
+
+      <div class="warn-row">
+        <div class="form-check form-switch">
+          <input id="w-disk" class="form-check-input" type="checkbox" role="switch" [checked]="st.warn.disk.on" (change)="set({ warn: { disk: { on: $any($event.target).checked } } })" />
+          <label class="form-check-label" for="w-disk"><strong>A drive is nearly full</strong></label>
+        </div>
+        <div class="warn-opt">
+          <label for="w-disk-pct" class="text-body-secondary">when less than</label>
+          <select id="w-disk-pct" class="form-select form-select-sm w-auto" [value]="st.warn.disk.percent" (change)="set({ warn: { disk: { percent: pick($event) } } })">
+            @for (p of diskOptions; track p) {
+              <option [value]="p" [selected]="p === st.warn.disk.percent">{{ p }}%</option>
+            }
+          </select>
+          <span class="text-body-secondary">is free</span>
+        </div>
+        <div class="sub">{{ jobLine('disk') }}</div>
+      </div>
+
+      <div class="warn-row">
+        <div class="form-check form-switch">
+          <input id="w-bat" class="form-check-input" type="checkbox" role="switch" [checked]="st.warn.battery.on" (change)="set({ warn: { battery: { on: $any($event.target).checked } } })" />
+          <label class="form-check-label" for="w-bat"><strong>The battery is low or worn</strong></label>
+        </div>
+        <div class="warn-opt">
+          <label for="w-bat-low" class="text-body-secondary">warn at</label>
+          <select id="w-bat-low" class="form-select form-select-sm w-auto" [value]="st.warn.battery.low" (change)="set({ warn: { battery: { low: pick($event) } } })">
+            @for (p of lowOptions; track p) {
+              <option [value]="p" [selected]="p === st.warn.battery.low">{{ p }}%</option>
+            }
+          </select>
+          <span class="text-body-secondary">on battery, and when health is under</span>
+          <select id="w-bat-health" class="form-select form-select-sm w-auto" aria-label="Warn when battery health is under" [value]="st.warn.battery.health" (change)="set({ warn: { battery: { health: pick($event) } } })">
+            @for (p of healthOptions; track p) {
+              <option [value]="p" [selected]="p === st.warn.battery.health">{{ p }}%</option>
+            }
+          </select>
+        </div>
+        <div class="sub">{{ jobLine('battery') }} Windows shows its own low-battery warning too, so you may see two.</div>
+      </div>
+
+      <div class="warn-row">
+        <div class="form-check form-switch">
+          <input id="w-upd" class="form-check-input" type="checkbox" role="switch" [checked]="st.warn.updates.on" (change)="set({ warn: { updates: { on: $any($event.target).checked } } })" />
+          <label class="form-check-label" for="w-upd"><strong>App updates are waiting</strong></label>
+        </div>
+        <div class="sub">Checked once a day with winget. It only warns: it never installs anything by itself. {{ jobLine('updates') }}</div>
+      </div>
+
+      <div class="warn-row">
+        <div class="form-check form-switch">
+          <input id="w-start" class="form-check-input" type="checkbox" role="switch" [checked]="st.warn.startup.on" (change)="set({ warn: { startup: { on: $any($event.target).checked } } })" />
+          <label class="form-check-label" for="w-start"><strong>A new program starts with Windows</strong></label>
+        </div>
+        <div class="sub">The first check only records what is already there. {{ jobLine('startup') }}</div>
+      </div>
+    </section>
+
+    <section class="panel panel-body mb-3">
+      <h2 class="panel-title"><app-icon name="trash" />Clean old temp files automatically</h2>
+      <div class="form-check form-switch mb-2">
+        <input id="clean" class="form-check-input" type="checkbox" role="switch" [checked]="st.clean.on" (change)="toggleClean($any($event.target))" />
+        <label class="form-check-label" for="clean"><strong>{{ st.clean.on ? 'On' : 'Off' }}</strong>: the same cleaning as the Cleanup page</label>
+      </div>
+      <p class="small text-body-secondary">Only your own temp folders (the temp folder and crash dumps), only files untouched for 7 days, files in use are skipped, and Windows' own temp folder is never touched. Turning it on shows what would be cleaned right now and asks you first.</p>
+      <div class="warn-opt mb-2">
+        <label for="c-days" class="text-body-secondary">Every</label>
+        <select id="c-days" class="form-select form-select-sm w-auto" [value]="st.clean.everyDays" (change)="set({ clean: { everyDays: pick($event) } })">
+          @for (d of dayOptions; track d) {
+            <option [value]="d" [selected]="d === st.clean.everyDays">{{ d === 1 ? 'day' : d + ' days' }}</option>
+          }
+        </select>
+        <label for="c-idle" class="text-body-secondary">when I have been away for</label>
+        <select id="c-idle" class="form-select form-select-sm w-auto" [value]="st.clean.idleMinutes" (change)="set({ clean: { idleMinutes: pick($event) } })">
+          @for (m of idleOptions; track m) {
+            <option [value]="m" [selected]="m === st.clean.idleMinutes">{{ m === 0 ? 'no time (any time)' : m + ' minutes' }}</option>
+          }
+        </select>
+      </div>
+      <div class="form-check mb-2">
+        <input id="c-ac" class="form-check-input" type="checkbox" [checked]="st.clean.onlyOnAc" (change)="set({ clean: { onlyOnAc: $any($event.target).checked } })" />
+        <label class="form-check-label" for="c-ac">Only when the PC is on the charger</label>
+      </div>
+      <div class="sub">
+        {{ jobLine('clean') }}
+        @if (lastClean(); as c) {
+          Last run {{ ageOf(c.at) }}: {{ fmt(c.freedBytes ?? 0) }} freed.
+        } @else if (st.clean.on) {
+          It has not run yet: it waits until you are away.
+        }
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-body pb-2"><h2 class="panel-title mb-0"><app-icon name="clock" />Activity</h2></div>
+      @if (recent().length) {
+        <table class="table data-table mb-0">
+          <thead>
+            <tr><th scope="col">When</th><th scope="col">What happened</th></tr>
+          </thead>
+          <tbody>
+            @for (e of recent(); track e.at + (e.id ?? e.kind)) {
+              <tr>
+                <td class="text-nowrap">{{ when(e.at) }}</td>
+                <td>
+                  <span class="chip" [class.chip-ok]="e.kind === 'clean'">{{ e.kind === 'clean' ? 'Cleaning' : 'Warning' }}</span>
+                  {{ what(e) }}
+                  @if (e.kind === 'warning' && e.shown === false) {
+                    <span class="sub d-block">Not shown as a pop-up: warnings were paused.</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      } @else {
+        <div class="note text-body-secondary">Nothing yet. Warnings and cleanings are listed here, newest first.</div>
+      }
+    </section>
+  } @else if (!auto.error()) {
+    <div class="panel"><div class="empty"><span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Reading the automation settings...</div></div>
+  }
+</div>

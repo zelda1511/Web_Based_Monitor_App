@@ -448,6 +448,73 @@ export interface BatteryReport {
   history?: BatteryHistoryRow[];
 }
 
+export interface AutoSettings {
+  version: number;
+  automation: boolean;
+  tray: boolean;
+  startWithWindows: boolean;
+  warn: {
+    disk: { on: boolean; percent: number };
+    battery: { on: boolean; low: number; urgent: number; health: number };
+    updates: { on: boolean };
+    startup: { on: boolean };
+  };
+  clean: { on: boolean; everyDays: number; idleMinutes: number; onlyOnAc: boolean };
+  quietUntil: number;
+}
+
+export interface AutoJob {
+  lastRunAt: number | null;
+  lastOk: boolean | null;
+  lastError: string | null;
+  waiting: string | null;
+  dead: boolean;
+}
+
+export interface ActivityEntry {
+  at: number;
+  kind: 'warning' | 'clean' | 'note';
+  id?: string;
+  title?: string;
+  body?: string;
+  route?: string;
+  shown?: boolean;
+  freedBytes?: number;
+  removed?: number;
+  failed?: number;
+  reasons?: string;
+  stopped?: boolean;
+  note?: string;
+}
+
+export interface AutoState {
+  settings: AutoSettings;
+  status: { master: boolean; jobs: Record<string, AutoJob> };
+  recent: ActivityEntry[];
+  loginItem: boolean | null;
+  packaged: boolean;
+  trayRunning: boolean;
+}
+
+export type AutoPatch = {
+  automation?: boolean;
+  tray?: boolean;
+  startWithWindows?: boolean;
+  warn?: {
+    disk?: { on?: boolean; percent?: number };
+    battery?: { on?: boolean; low?: number; urgent?: number; health?: number };
+    updates?: { on?: boolean };
+    startup?: { on?: boolean };
+  };
+  clean?: { on?: boolean; everyDays?: number; idleMinutes?: number; onlyOnAc?: boolean };
+  quietUntil?: number;
+};
+
+export interface CleanPreview {
+  token: string;
+  targets: { label: string; refused: string | null; items: number; bytes: number; keptRecent: number }[];
+}
+
 export interface EndResult {
   pid: number;
   ok: boolean;
@@ -491,6 +558,13 @@ declare global {
       restoreBackupFolder(id: string, index: number): Promise<RestoreResult>;
       deleteBackup(id: string): Promise<{ deleted: boolean }>;
       openBackup(id: string): Promise<string>;
+      getAutomation(): Promise<AutoState>;
+      setAutomation(patch: AutoPatch): Promise<AutoState>;
+      testNotification(): Promise<'shown' | 'paused' | 'failed'>;
+      quitApp(): Promise<void>;
+      previewAutoClean(): Promise<CleanPreview>;
+      enableAutoClean(token: string): Promise<AutoState>;
+      onNavigate(cb: (route: string) => void): () => void;
       getBattery(): Promise<BatteryNow>;
       getBatteryReport(): Promise<BatteryReport>;
       getDiskDrives(): Promise<DiskDrive[]>;

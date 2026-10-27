@@ -5,6 +5,7 @@
       <p class="text-body-secondary">Old temporary files you can remove. Anything changed in the last 7 days is left alone, the same as Windows' own Disk Cleanup.</p>
     </div>
     <div class="page-actions">
+      <app-automate feature="clean" />
       <button type="button" class="icon-btn" title="Scan again" aria-label="Scan again" [disabled]="scanning() || deleting()" (click)="scan()"><app-icon name="refresh" /></button>
     </div>
   </header>

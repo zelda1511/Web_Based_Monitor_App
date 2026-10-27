@@ -1,5 +1,6 @@
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { AppUpdate } from '../api';
+import { Automate } from '../automate-button';
 import { avatarHue, errorText } from '../format';
 import { SystemService } from '../system.service';
 import { UiService } from '../ui.service';
@@ -12,6 +13,7 @@ interface Outcome {
 }
 
 @Component({
+  imports: [Automate],
   selector: 'app-updates',
   templateUrl: './updates.html',
 })

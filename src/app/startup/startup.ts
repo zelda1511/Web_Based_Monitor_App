@@ -1,12 +1,13 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { StartupEntry } from '../api';
+import { Automate } from '../automate-button';
 import { avatarHue, errorText } from '../format';
 import { Icon } from '../icon';
 import { SystemService } from '../system.service';
 import { UiService } from '../ui.service';
 
 @Component({
-  imports: [Icon],
+  imports: [Icon, Automate],
   selector: 'app-startup',
   templateUrl: './startup.html',
 })

@@ -11,4 +11,7 @@ async function withLock(fn) {
   }
 }
 
-module.exports = { withLock };
+// True while an install, update or uninstall is running (closing the window to the tray must not end it).
+const isBusy = () => busy;
+
+module.exports = { withLock, isBusy };

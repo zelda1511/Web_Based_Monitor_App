@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { AutoPatch } from './api';
 
 @Injectable({ providedIn: 'root' })
 export class SystemService {
@@ -130,6 +131,35 @@ export class SystemService {
 
   async openBackup(id: string) {
     return (await this.api()).openBackup(id);
+  }
+
+  async automation() {
+    return (await this.api()).getAutomation();
+  }
+
+  async setAutomation(patch: AutoPatch) {
+    return (await this.api()).setAutomation(patch);
+  }
+
+  async testNotification() {
+    return (await this.api()).testNotification();
+  }
+
+  async quitApp() {
+    return (await this.api()).quitApp();
+  }
+
+  async previewAutoClean() {
+    return (await this.api()).previewAutoClean();
+  }
+
+  async enableAutoClean(token: string) {
+    return (await this.api()).enableAutoClean(token);
+  }
+
+  // a clicked warning asks the window to open a page; returns the function that stops listening (nothing outside Electron)
+  onNavigate(cb: (route: string) => void): () => void {
+    return window.api?.onNavigate(cb) ?? (() => undefined);
   }
 
   async battery() {

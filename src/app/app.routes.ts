@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { Backups } from './backups/backups';
+import { Automation } from './automation/automation';
 import { Battery } from './battery/battery';
 import { AppCatalog } from './catalog/catalog';
 import { Blocked } from './blocked/blocked';
@@ -24,6 +25,7 @@ export const routes: Routes = [
   { path: 'cleanup', component: Cleanup },
   { path: 'disk', component: DiskSpace },
   { path: 'battery', component: Battery },
+  { path: 'automation', component: Automation },
   { path: 'backups', component: Backups },
   { path: 'drivers', component: Drivers },
   { path: 'blocked', component: Blocked },

@@ -9,7 +9,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "test:main": "node --test electron/software.test.js electron/processes.test.js electron/startup.test.js electron/cleanup.test.js electron/drivers.test.js electron/winget.test.js electron/uninstall.test.js electron/leftovers.test.js electron/leftover-delete.test.js electron/driver-install.test.js electron/log.test.js electron/reg-file.test.js electron/backups.test.js electron/blocked.test.js electron/sizes.test.js electron/disk.test.js electron/recyclebin.test.js electron/downloads.test.js electron/caches.test.js electron/catalog.test.js electron/battery.test.js",
+    "test:main": "node --test electron/software.test.js electron/processes.test.js electron/startup.test.js electron/cleanup.test.js electron/drivers.test.js electron/winget.test.js electron/uninstall.test.js electron/leftovers.test.js electron/leftover-delete.test.js electron/driver-install.test.js electron/log.test.js electron/reg-file.test.js electron/backups.test.js electron/blocked.test.js electron/sizes.test.js electron/disk.test.js electron/recyclebin.test.js electron/downloads.test.js electron/caches.test.js electron/catalog.test.js electron/battery.test.js electron/settings.test.js electron/automation.test.js electron/notify.test.js",
     "test:live": "node --test electron/driver-install.live.test.js",
     "pack": "ng build && electron-builder --win dir",
     "dist": "ng build && electron-builder --win zip",

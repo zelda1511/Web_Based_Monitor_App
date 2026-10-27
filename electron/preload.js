@@ -35,6 +35,18 @@ contextBridge.exposeInMainWorld('api', {
   restoreBackupFolder: (id, index) => ipcRenderer.invoke('bak:restoreFolder', id, index),
   deleteBackup: (id) => ipcRenderer.invoke('bak:delete', id),
   openBackup: (id) => ipcRenderer.invoke('bak:open', id),
+  getAutomation: () => ipcRenderer.invoke('auto:get'),
+  setAutomation: (patch) => ipcRenderer.invoke('auto:set', patch),
+  testNotification: () => ipcRenderer.invoke('auto:test'),
+  quitApp: () => ipcRenderer.invoke('app:quit'),
+  previewAutoClean: () => ipcRenderer.invoke('auto:cleanPreview'),
+  enableAutoClean: (token) => ipcRenderer.invoke('auto:cleanEnable', token),
+  // a warning that was clicked asks the window to open a page: only a route name arrives here
+  onNavigate: (cb) => {
+    const handler = (_e, route) => cb(route);
+    ipcRenderer.on('app:navigate', handler);
+    return () => ipcRenderer.removeListener('app:navigate', handler);
+  },
   getBattery: () => ipcRenderer.invoke('bat:now'),
   getBatteryReport: () => ipcRenderer.invoke('bat:report'),
   getDiskDrives: () => ipcRenderer.invoke('disk:drives'),

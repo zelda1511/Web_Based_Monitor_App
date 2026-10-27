@@ -89,6 +89,9 @@ import { Component, input } from '@angular/core';
         @case ('shield') {
           <path d="M12 3 4 6v6c0 4.5 3.2 8 8 9 4.8-1 8-4.5 8-9V6z" /><path d="m9.5 9.5 5 5M14.5 9.5l-5 5" />
         }
+        @case ('bell') {
+          <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.7 21a2 2 0 0 1-3.4 0" />
+        }
         @case ('battery') {
           <rect x="2" y="7" width="17" height="10" rx="2" /><path d="M22 10.5v3" /><path d="M6 10.5v3M10 10.5v3" />
         }
