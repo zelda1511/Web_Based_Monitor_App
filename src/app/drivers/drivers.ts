@@ -1,5 +1,5 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { DriverList, DriverRow, DriverUpdate, UpdateScan } from '../api';
+import { DriverList, DriverUpdate, UpdateScan } from '../api';
 import { compareValues, errorText, formatBytes } from '../format';
 import { Icon } from '../icon';
 import { SystemService } from '../system.service';
@@ -7,11 +7,8 @@ import { UiService } from '../ui.service';
 
 type SortKey = 'name' | 'provider' | 'version' | 'date';
 
-const VENDORS = [
-  { key: 'nvidia', pattern: /nvidia/i, label: "NVIDIA's driver page" },
-  { key: 'amd', pattern: /advanced micro|amd|ati technologies/i, label: "AMD's driver page" },
-  { key: 'intel', pattern: /intel/i, label: "Intel's driver page" },
-];
+// The maker's page for a driver (the key comes from the main process, which reads it from the provider name).
+const VENDOR_LABELS = { nvidia: "NVIDIA's driver page", amd: "AMD's driver page", intel: "Intel's driver page" };
 
 const HINTS: Record<number, string> = {
   43: 'Windows stopped this device after it reported a problem. For a USB device, try unplugging it, another port or another cable.',
@@ -30,6 +27,7 @@ export class Drivers implements OnInit {
 
   protected readonly fmt = formatBytes;
   protected readonly hints = HINTS;
+  protected readonly vendorLabels = VENDOR_LABELS;
   protected readonly columns: { key: SortKey; label: string }[] = [
     { key: 'name', label: 'Device' },
     { key: 'provider', label: 'Provider' },
@@ -46,18 +44,31 @@ export class Drivers implements OnInit {
   protected readonly scanError = signal<string | null>(null);
   protected readonly query = signal('');
   protected readonly showMicrosoft = signal(false);
+  protected readonly hardwareOnly = signal(true);
   protected readonly sortKey = signal<SortKey>('name');
   protected readonly sortDir = signal<1 | -1>(1);
 
   protected readonly displays = computed(() => this.data()?.drivers.filter((d) => d.cls === 'DISPLAY') ?? []);
   protected readonly thirdPartyCount = computed(() => this.data()?.drivers.filter((d) => !d.microsoft).length ?? 0);
-  protected readonly rows = computed(() => {
+  // What the Microsoft switch and the search leave; the hardware switch is applied on top of this.
+  private readonly matching = computed(() => {
     const q = this.query().trim().toLowerCase();
+    return (this.data()?.drivers ?? []).filter((d) => (this.showMicrosoft() || !d.microsoft) && (!q || [d.name, d.provider, d.cls, d.kind].some((t) => t?.toLowerCase().includes(q))));
+  });
+  protected readonly rows = computed(() => {
     const k = this.sortKey();
     const dir = this.sortDir();
-    return (this.data()?.drivers ?? [])
-      .filter((d) => (this.showMicrosoft() || !d.microsoft) && (!q || [d.name, d.provider, d.cls].some((t) => t?.toLowerCase().includes(q))))
+    return this.matching()
+      .filter((d) => !this.hardwareOnly() || d.hardware)
       .sort((a, b) => compareValues(a[k], b[k], dir));
+  });
+  protected readonly hiddenSoftware = computed(() => (this.hardwareOnly() ? this.matching().filter((d) => !d.hardware).length : 0));
+  // The update to show on each row. When Windows Update offers several for one device the newest is shown; the others stay in the list above.
+  protected readonly updateByDevice = computed(() => {
+    const byDevice = new Map<string, DriverUpdate>();
+    const newestFirst = [...(this.scan()?.updates ?? [])].sort((a, b) => (b.date ?? '').localeCompare(a.date ?? ''));
+    for (const u of newestFirst) for (const id of u.deviceIds ?? []) if (!byDevice.has(id)) byDevice.set(id, u);
+    return byDevice;
   });
 
   ngOnInit() {
@@ -88,9 +99,10 @@ export class Drivers implements OnInit {
 
   protected async install(u: DriverUpdate) {
     if (!u.id) return;
+    const firmware = /firmware/i.test(u.cls ?? '');
     const ok = await this.ui.confirm({
       title: 'Install this driver?',
-      body: `${u.title}. Windows makes a System Restore point first and installs nothing if that fails, then downloads and installs the driver from Windows Update. It can take several minutes, the screen may flicker, and a restart may be needed. Windows asks for permission once.`,
+      body: `${u.title}. Windows makes a System Restore point first and installs nothing if that fails, then downloads and installs the driver from Windows Update. It can take several minutes, the screen may flicker, and a restart may be needed. Windows asks for permission once.${firmware ? ' This is a firmware update: a restore point cannot undo it. Keep the PC plugged in and do not switch it off while it installs.' : ''}`,
       confirmLabel: 'Install',
     });
     if (!ok) return;
@@ -105,11 +117,7 @@ export class Drivers implements OnInit {
       this.ui.toast(errorText(e), 'error');
     }
     this.installingId.set(null);
-    await this.checkUpdates(); // show what Windows Update offers now
-  }
-
-  protected vendorOf(d: DriverRow) {
-    return VENDORS.find((v) => v.pattern.test(d.provider ?? '')) ?? null;
+    await Promise.all([this.checkUpdates(), this.load()]); // show what Windows Update offers now, and the version that is installed now
   }
 
   protected async open(key: string) {
@@ -138,6 +146,10 @@ export class Drivers implements OnInit {
 
   protected onToggleMicrosoft(e: Event) {
     this.showMicrosoft.set((e.target as HTMLInputElement).checked);
+  }
+
+  protected onToggleHardware(e: Event) {
+    this.hardwareOnly.set((e.target as HTMLInputElement).checked);
   }
 
   protected timeOf(ms: number) {

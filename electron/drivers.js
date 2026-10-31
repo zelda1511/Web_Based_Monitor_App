@@ -14,14 +14,20 @@ const LINKS = {
 
 const LIST_SCRIPT = String.raw`
 [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding $false
+$ents = @(Get-CimInstance Win32_PnPEntity)
+$byId = @{}
+foreach ($e in $ents) { if ($e.DeviceID) { $byId[[string]$e.DeviceID] = $e } }
 $d = Get-CimInstance Win32_PnPSignedDriver | Where-Object { $_.DeviceName } | ForEach-Object {
+  $e = $byId[[string]$_.DeviceID]
   [pscustomobject]@{
     name = $_.DeviceName; cls = $_.DeviceClass; provider = $_.DriverProviderName; manufacturer = $_.Manufacturer
     version = $_.DriverVersion; signed = $_.IsSigned
     date = if ($_.DriverDate) { $_.DriverDate.ToUniversalTime().ToString('yyyy-MM-dd') } else { $null }
+    deviceId = $_.DeviceID
+    hardwareIds = if ($e -and $e.HardwareID) { @($e.HardwareID) } else { @() }
   }
 }
-$p = Get-CimInstance Win32_PnPEntity -Filter 'ConfigManagerErrorCode <> 0' | ForEach-Object {
+$p = $ents | Where-Object { $_.ConfigManagerErrorCode -gt 0 } | ForEach-Object {
   [pscustomobject]@{ name = $_.Name; code = [int]$_.ConfigManagerErrorCode; cls = $_.PNPClass }
 }
 ConvertTo-Json -InputObject @{ drivers = @($d); problems = @($p) } -Compress -Depth 4
@@ -36,7 +42,7 @@ $result = $session.CreateUpdateSearcher().Search("IsInstalled=0 and Type='Driver
 $u = foreach ($x in $result.Updates) {
   [pscustomobject]@{
     id = $x.Identity.UpdateID; revision = [int]$x.Identity.RevisionNumber
-    title = $x.Title; manufacturer = $x.DriverManufacturer; model = $x.DriverModel; cls = $x.DriverClass
+    title = $x.Title; manufacturer = $x.DriverManufacturer; model = $x.DriverModel; cls = $x.DriverClass; hardwareId = $x.DriverHardwareID
     date = if ($x.DriverVerDate) { ([datetime]$x.DriverVerDate).ToString('yyyy-MM-dd') } else { $null }
     sizeBytes = [int64]$x.MaxDownloadSize; downloaded = [bool]$x.IsDownloaded
   }
@@ -62,6 +68,48 @@ function nvidiaVersion(version) {
   return digits.length === 5 ? `${digits.slice(0, 3)}.${digits.slice(3)}` : null;
 }
 
+// Hardware or software component? The first part of a device's instance id (PCI, USB, ACPI, SWD...) says who made the device
+// appear, which is more reliable than its class: "Nahimic VAD" is class MEDIA but a software device, and "NVIDIA Platform
+// Controllers" is class SOFTWAREDEVICE but sits on the ACPI bus. The class only decides for a bus not listed here.
+const SOFTWARE_BUSES = new Set(['root', 'sw', 'swd', 'swc']); // virtual and software-made devices (a {GUID} bus too)
+const HARDWARE_BUSES = new Set(['pci', 'usb', 'acpi', 'acpi_hal', 'acp', 'hdaudio', 'hid', 'display', 'scsi', 'uefi', 'ide', 'nvme', 'sd', 'sdbus', 'usbstor']); // 'bth*' too
+const SOFTWARE_CLASSES = new Set(['softwaredevice', 'softwarecomponent', 'audioprocessingobject', 'audioendpoint', 'printqueue', 'volume', 'volumesnapshot', 'extension']);
+const KINDS = {
+  display: 'Graphics', monitor: 'Monitor', net: 'Network', media: 'Audio', bluetooth: 'Bluetooth', usb: 'USB', usbdevice: 'USB',
+  hidclass: 'Input', keyboard: 'Input', mouse: 'Input', scsiadapter: 'Storage', diskdrive: 'Storage', hdc: 'Storage', cdrom: 'Storage',
+  camera: 'Camera', image: 'Camera', firmware: 'Firmware', battery: 'Battery',
+  system: 'Chipset and system', processor: 'Chipset and system', securitydevices: 'Chipset and system', ucm: 'Chipset and system', computer: 'Chipset and system',
+};
+
+function busOf(deviceId) {
+  return String(deviceId || '').split('\\')[0].toLowerCase();
+}
+
+function classify(deviceId, cls) {
+  const bus = busOf(deviceId);
+  const c = String(cls || '').toLowerCase();
+  let hardware;
+  if (!bus) hardware = !!c && !SOFTWARE_CLASSES.has(c); // no instance id: the class is all there is, and no class means nothing to go on
+  else if (SOFTWARE_BUSES.has(bus) || bus.startsWith('{')) hardware = false;
+  else if (HARDWARE_BUSES.has(bus) || bus.startsWith('bth')) hardware = true;
+  else hardware = !SOFTWARE_CLASSES.has(c);
+  if (!hardware) return { hardware, kind: 'Software component' };
+  if (bus.startsWith('bth')) return { hardware, kind: 'Bluetooth' };
+  if (bus === 'hdaudio' || bus === 'acp') return { hardware, kind: 'Audio' };
+  return { hardware, kind: KINDS[c] ?? (bus === 'uefi' ? 'Firmware' : 'Other hardware') };
+}
+
+// Makers whose own driver page the app can open (LINKS keys). Nothing here knows whether a newer driver exists there.
+function vendorOf(provider) {
+  const p = String(provider || '');
+  if (/nvidia/i.test(p)) return 'nvidia';
+  if (/advanced micro|\bamd\b|ati technologies/i.test(p)) return 'amd';
+  if (/\bintel\b/i.test(p)) return 'intel';
+  return null;
+}
+
+const hardwareIdList = (raw) => [].concat(raw ?? []).filter((h) => typeof h === 'string').map((h) => h.trim().toLowerCase().slice(0, 200)).filter(Boolean).slice(0, 40);
+
 function parseDrivers(raw, now = Date.now()) {
   return [].concat(raw ?? [])
     .filter((d) => d && d.name)
@@ -80,6 +128,10 @@ function parseDrivers(raw, now = Date.now()) {
         microsoft,
         // Old is only a hint: a stable driver can be years old and fine. Windows' own inbox drivers are not flagged.
         old: !microsoft && ageMs != null && ageMs > OLD_YEARS * YEAR_MS,
+        ...classify(d.deviceId, d.cls),
+        vendor: vendorOf(provider),
+        deviceId: typeof d.deviceId === 'string' && d.deviceId ? d.deviceId : null,
+        hardwareIds: hardwareIdList(d.hardwareIds), // main process only: listDrivers() does not send them to the window
       };
     })
     .sort((a, b) => a.name.localeCompare(b.name));
@@ -102,6 +154,7 @@ function parseUpdates(raw) {
       manufacturer: u.manufacturer || null,
       model: u.model || null,
       cls: u.cls || null,
+      hardwareId: typeof u.hardwareId === 'string' && u.hardwareId.trim() ? u.hardwareId.trim().toLowerCase().slice(0, 200) : null, // the device this driver is for
       date: u.date || null,
       sizeBytes: u.sizeBytes > 0 ? u.sizeBytes : null,
       downloaded: !!u.downloaded,
@@ -113,10 +166,30 @@ const run = (script, timeout) =>
   execFile('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', script], { maxBuffer: 16 * 1024 * 1024, timeout, windowsHide: true });
 const json = (stdout) => JSON.parse(stdout.replace(/^﻿/, ''));
 
-async function listDrivers() {
+async function readDrivers() {
   const { stdout } = await run(LIST_SCRIPT, 60000);
   const data = json(stdout);
   return { drivers: parseDrivers(data.drivers), problems: parseProblems(data.problems) };
+}
+
+async function listDrivers() {
+  const { drivers, problems } = await readDrivers();
+  return { drivers: drivers.map(({ hardwareIds, ...row }) => row), problems };
+}
+
+// Which installed devices is each update for? Only an exact match of the update's hardware id with one of the device's own hardware ids
+// counts (case aside). Compatible ids are left out on purpose: a generic one such as PCI\CC_0C05 would put "update available" on every
+// device of that kind. No guessing from names either: an update that matches nothing stays in the update list and is installed from there.
+function matchUpdates(drivers, updates) {
+  const devices = new Map(); // hardware id -> device ids that have it
+  for (const d of drivers) {
+    if (!d.deviceId) continue;
+    for (const h of d.hardwareIds ?? []) {
+      if (!devices.has(h)) devices.set(h, new Set());
+      devices.get(h).add(d.deviceId);
+    }
+  }
+  return updates.map((u) => ({ ...u, deviceIds: u.hardwareId ? [...(devices.get(u.hardwareId) ?? [])] : [] }));
 }
 
 async function scanDriverUpdates() {
@@ -133,4 +206,11 @@ async function scanDriverUpdates() {
   return { updates: parseUpdates(data.updates), checkedAt: Date.now() };
 }
 
-module.exports = { listDrivers, scanDriverUpdates, parseDrivers, parseProblems, parseUpdates, nvidiaVersion, LINKS };
+// What the Drivers page asks for: the Windows Update search, with each update tied to the installed devices it is for. The list read
+// runs at the same time; if it fails the updates still come back, just without any device attached.
+async function checkDriverUpdates(d = {}) {
+  const [scan, list] = await Promise.all([(d.scan ?? scanDriverUpdates)(), (d.read ?? readDrivers)().catch(() => null)]);
+  return { ...scan, updates: matchUpdates(list?.drivers ?? [], scan.updates) };
+}
+
+module.exports = { listDrivers, readDrivers, scanDriverUpdates, checkDriverUpdates, matchUpdates, classify, vendorOf, parseDrivers, parseProblems, parseUpdates, nvidiaVersion, LINKS };

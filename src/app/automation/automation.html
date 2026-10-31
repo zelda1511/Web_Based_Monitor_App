@@ -50,8 +50,8 @@
     </section>
 
     <section class="panel panel-body mb-3">
-      <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
-        <h2 class="panel-title mb-0 me-auto"><app-icon name="bell" />Warnings</h2>
+      <div class="panel-bar">
+        <h2 class="panel-title"><app-icon name="bell" />Warnings</h2>
         <button type="button" class="btn btn-quiet btn-sm" (click)="pause()">{{ paused() ? 'Resume warnings' : 'Pause warnings for 1 hour' }}</button>
         <button type="button" class="btn btn-quiet btn-sm" (click)="test()">Send a test notification</button>
       </div>
@@ -152,7 +152,7 @@
     </section>
 
     <section class="panel">
-      <div class="panel-body pb-2"><h2 class="panel-title mb-0"><app-icon name="clock" />Activity</h2></div>
+      <div class="panel-bar"><h2 class="panel-title"><app-icon name="clock" />Activity</h2></div>
       @if (recent().length) {
         <table class="table data-table mb-0">
           <thead>

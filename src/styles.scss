@@ -1,49 +1,90 @@
 @use "bootstrap/scss/bootstrap";
 
+// Look: a compact pro tool. A narrow rail and tab bar, flat panels with header strips, tight rows, numbers first.
+// Built on Bootstrap and plain tokens (no extra package). One blue accent.
+// Shape rule: controls --r-ctl, panels --r-card, dialogs --r-dlg, and full pills only for chips, switches and meters.
 :root {
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-  --radius: 12px;
+  --r-ctl: 4px;
+  --r-card: 6px;
+  --r-dlg: 8px;
+  --radius: var(--r-card);
   --bs-body-font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
-  --bs-body-font-size: 0.875rem;
+  --font-display: "Segoe UI Variable Display", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --bs-body-font-size: 0.8125rem;
+  --bs-body-line-height: 1.4;
 }
 
 // Both themes redefine the same tokens, so components only use var(--token).
 [data-bs-theme="light"] {
-  --bs-body-bg: #f4f5f8;
-  --bs-body-color: #1a2030;
-  --bs-secondary-color: #5d6679;
-  --bs-border-color: #e1e4eb;
-  --bs-primary: #2f5fe0;
-  --bs-primary-rgb: 47, 95, 224;
-  --surface: #ffffff;
-  --surface-2: #eef0f5;
-  --accent: #2f5fe0;
-  --accent-ink: #2449b8;
-  --accent-soft: #e6ecfd;
-  --danger: #c62d3d;
-  --danger-soft: #fdecee;
-  --ok: #1a8f3c;
-  --viz-cpu: #2a78d6;
-  --viz-ram: #eb6834;
+  --rail-bg: #e9e9ec;
+  --bs-body-bg: #f5f5f7;
+  --bs-body-color: #1a1a1c;
+  --bs-secondary-color: #5a5a60;
+  --bs-border-color: #d9d9de;
+  --bs-primary: #0f6cbd;
+  --bs-primary-rgb: 15, 108, 189;
+  --surface: #fcfcfd;
+  --surface-2: #eeeef1;
+  --accent: #0f6cbd;
+  --accent-hover: #115ea3;
+  --accent-ink: #0b5a9e;
+  --accent-soft: #e3eef9;
+  --on-accent: #ffffff;
+  --danger: #c4314b;
+  --danger-btn: #c4314b;
+  --danger-btn-hover: #a8283f;
+  --danger-soft: #fbe8eb;
+  --ok: #107c10;
+  --ok-soft: #e6f3e6;
+  --warn: #8a5a00;
+  --warn-fill: #e0a100;
+  --viz-cpu: #0f6cbd;
+  --viz-ram: #d35a1f;
+  --control-border: #85858c;
+  --shadow-card: none;
+  --avatar-bg: hsl(var(--h, 220) 45% 90%);
+  --avatar-ink: hsl(var(--h, 220) 55% 28%);
 }
 
 [data-bs-theme="dark"] {
-  --bs-body-bg: #0e1117;
-  --bs-body-color: #e7eaf0;
-  --bs-secondary-color: #9aa3b4;
-  --bs-border-color: #262c38;
-  --bs-primary: #5b8cff;
-  --bs-primary-rgb: 91, 140, 255;
-  --surface: #161b24;
-  --surface-2: #1f2633;
-  --accent: #5b8cff;
-  --accent-ink: #9bb8ff;
-  --accent-soft: #1b2a4f;
-  --danger: #ff7a85;
-  --danger-soft: #3a1c22;
-  --ok: #4cc275;
-  --viz-cpu: #3987e5;
-  --viz-ram: #d95926;
+  --rail-bg: #111113;
+  --bs-body-bg: #1a1a1c;
+  --bs-body-color: #ececee;
+  --bs-secondary-color: #a3a3a9;
+  --bs-border-color: #333338;
+  --bs-primary: #479ef5;
+  --bs-primary-rgb: 71, 158, 245;
+  --surface: #212124;
+  --surface-2: #2a2a2e;
+  --accent: #479ef5;
+  --accent-hover: #62abf5;
+  --accent-ink: #8cc4fb;
+  --accent-soft: rgb(71 158 245 / 0.18);
+  --on-accent: #0a0a0a;
+  --danger: #f0808c;
+  --danger-btn: #b82e45;
+  --danger-btn-hover: #cf3a52;
+  --danger-soft: #3d2227;
+  --ok: #6ccb5f;
+  --ok-soft: #203322;
+  --warn: #f2b94b;
+  --warn-fill: #f2b94b;
+  --viz-cpu: #479ef5;
+  --viz-ram: #ee8a52;
+  --control-border: #8a8a92;
+  --shadow-card: none;
+  --avatar-bg: hsl(var(--h, 220) 30% 24%);
+  --avatar-ink: hsl(var(--h, 220) 70% 82%);
+
+  // Bootstrap's check mark and switch knob are white; on the light accent they need a dark one.
+  .form-check-input:checked[type="checkbox"] {
+    --bs-form-check-bg-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><path fill='none' stroke='%230a0a0a' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/></svg>");
+  }
+
+  .form-switch .form-check-input:checked {
+    --bs-form-switch-bg: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'><circle r='3' fill='%230a0a0a'/></svg>");
+  }
 }
 
 html,
@@ -73,7 +114,7 @@ body {
 // Page layout
 
 .page {
-  max-width: 1180px;
+  max-width: 1600px;
   margin: 0 auto;
 }
 
@@ -82,89 +123,165 @@ body {
   flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1.25rem;
+  gap: 0.75rem 1rem;
+  margin-bottom: 0.9rem;
 
   // A long description wraps instead of pushing the buttons onto a second row.
   > div:first-child {
     flex: 0 1 auto;
     min-width: 0;
-    max-width: 34rem;
+    max-width: 52rem;
   }
 
   h1 {
     margin: 0;
-    font-size: 1.5rem;
+    font-size: 1.1rem;
     font-weight: 650;
-    letter-spacing: -0.01em;
+    line-height: 1.25;
+    letter-spacing: -0.005em;
   }
 
   p {
-    margin: 0.2rem 0 0;
+    margin: 0.15rem 0 0;
+    font-size: 0.8rem;
+    color: var(--bs-secondary-color);
   }
 }
 
 .page-actions {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.4rem;
 }
 
-// Surfaces
+// Surfaces: flat boxes with a hairline. A panel's title becomes a header strip.
 
 .panel {
   background: var(--surface);
   border: 1px solid var(--bs-border-color);
-  border-radius: var(--radius);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-card);
   overflow: clip; // keeps rounded corners without breaking sticky table headers
 }
 
 .panel-body {
-  padding: 1rem 1.15rem;
+  padding: 0.7rem 0.9rem;
 }
 
 .panel-title {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.45rem;
   margin: 0 0 0.6rem;
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--bs-secondary-color);
+  font-size: 0.8rem;
+  font-weight: 650;
+  color: var(--bs-body-color);
+
+  .icon {
+    color: var(--bs-secondary-color);
+  }
+}
+
+.panel-body > .panel-title {
+  margin: -0.7rem -0.9rem 0.7rem;
+  padding: 0.4rem 0.9rem;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--bs-border-color);
+}
+
+// A header strip for panels whose title row also holds a legend or buttons (the plain .panel-title is turned into one by .panel-body).
+.panel-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.9rem;
+  padding: 0.3rem 0.9rem;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--bs-border-color);
+
+  .panel-title {
+    margin: 0 auto 0 0;
+  }
+}
+
+// Inside a padded panel the bar reaches the panel's edges.
+.panel-body > .panel-bar {
+  margin: -0.7rem -0.9rem 0.7rem;
+}
+
+// Headings that were sized for a roomy page.
+h2.h5,
+h3.h5 {
+  font-size: 0.95rem;
+  font-weight: 650;
 }
 
 .stat {
-  padding: 1rem 1.15rem;
+  padding: 0.7rem 0.9rem;
 }
 
 .stat-label {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-weight: 600;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 500;
   color: var(--bs-secondary-color);
 }
 
 .stat-value {
-  margin: 0.35rem 0 0.1rem;
-  font-size: 2rem;
-  font-weight: 650;
+  margin: 0.2rem 0 0.05rem;
+  font-size: 1.7rem;
+  font-weight: 600;
   line-height: 1.1;
   letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
 }
 
 .stat-sub {
   min-height: 1.3em;
+  font-size: 0.78rem;
+}
+
+// Several stats in one flat strip, divided by hairlines.
+.strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+
+  > .stat + .stat {
+    border-left: 1px solid var(--bs-border-color);
+  }
+}
+
+// A thin usage bar under a stat or beside a drive. Width is set inline; color follows the state class.
+.meter {
+  display: block;
+  height: 4px;
+  margin-top: 0.5rem;
+  overflow: hidden;
+  background: var(--surface-2);
+  border-radius: 99px;
+
+  > i {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+    border-radius: inherit;
+    transition: width 400ms var(--ease-out);
+  }
+
+  &.warn > i { background: var(--warn-fill); }
+  &.danger > i { background: var(--danger); }
 }
 
 // Controls
 
 .btn {
-  --bs-btn-border-radius: 8px;
+  --bs-btn-border-radius: var(--r-ctl);
   --bs-btn-font-weight: 500;
-  --bs-btn-padding-y: 0.4rem;
+  --bs-btn-padding-y: 0.26rem;
+  --bs-btn-padding-x: 0.75rem;
+  --bs-btn-font-size: 0.8125rem;
   transition: transform 160ms var(--ease-out), background-color 150ms ease, border-color 150ms ease, color 150ms ease;
 
   &:active {
@@ -172,33 +289,45 @@ body {
   }
 }
 
+.btn-sm {
+  --bs-btn-padding-y: 0.15rem;
+  --bs-btn-padding-x: 0.55rem;
+  --bs-btn-font-size: 0.78rem;
+}
+
 .btn-primary {
-  --bs-btn-color: #fff;
+  --bs-btn-color: var(--on-accent);
   --bs-btn-bg: var(--accent);
   --bs-btn-border-color: var(--accent);
-  --bs-btn-hover-color: #fff;
-  --bs-btn-hover-bg: var(--accent-ink);
-  --bs-btn-hover-border-color: var(--accent-ink);
-  --bs-btn-active-color: #fff;
-  --bs-btn-active-bg: var(--accent-ink);
-  --bs-btn-active-border-color: var(--accent-ink);
+  --bs-btn-hover-color: var(--on-accent);
+  --bs-btn-hover-bg: var(--accent-hover);
+  --bs-btn-hover-border-color: var(--accent-hover);
+  --bs-btn-active-color: var(--on-accent);
+  --bs-btn-active-bg: var(--accent-hover);
+  --bs-btn-active-border-color: var(--accent-hover);
+  --bs-btn-disabled-color: var(--on-accent);
+  --bs-btn-disabled-bg: var(--accent);
+  --bs-btn-disabled-border-color: var(--accent);
 }
 
 .btn-danger {
   --bs-btn-color: #fff;
-  --bs-btn-bg: #c62d3d;
-  --bs-btn-border-color: #c62d3d;
+  --bs-btn-bg: var(--danger-btn);
+  --bs-btn-border-color: var(--danger-btn);
   --bs-btn-hover-color: #fff;
-  --bs-btn-hover-bg: #a92433;
-  --bs-btn-hover-border-color: #a92433;
+  --bs-btn-hover-bg: var(--danger-btn-hover);
+  --bs-btn-hover-border-color: var(--danger-btn-hover);
   --bs-btn-active-color: #fff;
-  --bs-btn-active-bg: #a92433;
-  --bs-btn-active-border-color: #a92433;
+  --bs-btn-active-bg: var(--danger-btn-hover);
+  --bs-btn-active-border-color: var(--danger-btn-hover);
+  --bs-btn-disabled-color: #fff;
+  --bs-btn-disabled-bg: var(--danger-btn);
+  --bs-btn-disabled-border-color: var(--danger-btn);
 }
 
 .btn-quiet {
   --bs-btn-color: var(--bs-body-color);
-  --bs-btn-bg: transparent;
+  --bs-btn-bg: var(--surface);
   --bs-btn-border-color: var(--bs-border-color);
   --bs-btn-hover-color: var(--bs-body-color);
   --bs-btn-hover-bg: var(--surface-2);
@@ -206,12 +335,15 @@ body {
   --bs-btn-active-color: var(--bs-body-color);
   --bs-btn-active-bg: var(--surface-2);
   --bs-btn-active-border-color: var(--bs-border-color);
+  --bs-btn-disabled-color: var(--bs-body-color);
+  --bs-btn-disabled-bg: var(--surface);
+  --bs-btn-disabled-border-color: var(--bs-border-color);
 }
 
 .btn-end {
-  --bs-btn-padding-y: 0.25rem;
-  --bs-btn-padding-x: 0.65rem;
-  --bs-btn-font-size: 0.8rem;
+  --bs-btn-padding-y: 0.15rem;
+  --bs-btn-padding-x: 0.55rem;
+  --bs-btn-font-size: 0.78rem;
   --bs-btn-color: var(--danger);
   --bs-btn-bg: transparent;
   --bs-btn-border-color: var(--bs-border-color);
@@ -227,13 +359,13 @@ body {
   display: inline-grid;
   flex: none;
   place-items: center;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   padding: 0;
   color: var(--bs-secondary-color);
   background: transparent;
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--r-ctl);
   transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--ease-out);
 
   &:active {
@@ -250,9 +382,22 @@ body {
 
 .form-control,
 .form-select {
+  padding-block: 0.22rem;
+  font-size: 0.8125rem;
+  color: var(--bs-body-color);
   background-color: var(--surface);
   border-color: var(--bs-border-color);
-  border-radius: 8px;
+  border-radius: var(--r-ctl);
+
+  &:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+}
+
+// Checkboxes and switches need an edge you can see (3:1) even when empty; text fields keep the softer border.
+.form-check-input {
+  border-color: var(--control-border);
 }
 
 .form-check-input:checked {
@@ -272,18 +417,30 @@ body {
   .icon {
     position: absolute;
     top: 50%;
-    left: 0.7rem;
+    left: 0.6rem;
     transform: translateY(-50%);
     pointer-events: none;
   }
 
   input {
-    width: 17rem;
-    padding-left: 2.2rem;
+    width: 16rem;
+    padding-left: 2rem;
   }
 }
 
-// Tables
+.alert {
+  --bs-alert-border-radius: var(--r-card);
+  --bs-alert-border-color: transparent;
+  --bs-alert-padding-y: 0.5rem;
+  --bs-alert-padding-x: 0.8rem;
+}
+
+.alert-danger {
+  --bs-alert-color: var(--danger);
+  --bs-alert-bg: var(--danger-soft);
+}
+
+// Tables: tight rows, a header strip, numbers lined up.
 
 .data-table {
   --bs-table-bg: transparent;
@@ -294,29 +451,25 @@ body {
     position: sticky;
     top: 0;
     z-index: 1;
-    padding: 0.7rem 0.9rem;
-    font-size: 0.72rem;
+    padding: 0.32rem 0.75rem;
+    font-size: 0.74rem;
     font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
     color: var(--bs-secondary-color);
     white-space: nowrap;
-    background: var(--surface);
+    background: var(--surface-2);
     border-bottom: 1px solid var(--bs-border-color);
 
     button {
       padding: 0;
       font: inherit;
       color: inherit;
-      letter-spacing: inherit;
-      text-transform: inherit;
       background: none;
       border: 0;
     }
   }
 
   td {
-    padding: 0.5rem 0.9rem;
+    padding: 0.28rem 0.75rem;
     vertical-align: middle;
     border-color: var(--bs-border-color);
     font-variant-numeric: tabular-nums;
@@ -336,6 +489,24 @@ body {
     white-space: nowrap;
   }
 
+  // The letter tile only costs height in a dense table.
+  .avatar {
+    display: none;
+  }
+
+  // Buttons inside rows must not make the row taller than its text.
+  .btn {
+    --bs-btn-padding-y: 0.08rem;
+    --bs-btn-padding-x: 0.5rem;
+    --bs-btn-font-size: 0.76rem;
+    line-height: 1.25;
+  }
+
+  .icon-btn {
+    width: 26px;
+    height: 22px;
+  }
+
   // Row actions appear on hover or keyboard focus; always visible on touch.
   .row-action {
     opacity: 1;
@@ -345,7 +516,7 @@ body {
 @media (hover: hover) and (pointer: fine) {
   .data-table {
     tbody tr:hover {
-      background: var(--surface-2);
+      background: color-mix(in srgb, var(--bs-body-color) 5%, transparent);
     }
 
     .row-action {
@@ -363,31 +534,32 @@ body {
 .name-cell {
   display: flex;
   align-items: center;
-  gap: 0.7rem;
+  gap: 0.55rem;
   min-width: 0;
 
   .sub {
     display: block;
     max-width: 28rem;
     overflow: hidden;
-    font-size: 0.78rem;
+    font-size: 0.74rem;
     color: var(--bs-secondary-color);
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 }
 
+// App letter tile (lists that are not tables): a soft tint of the app's own hue.
 .avatar {
   display: inline-grid;
   flex: none;
   place-items: center;
-  width: 28px;
-  height: 28px;
-  font-size: 0.8rem;
-  font-weight: 650;
-  color: #fff;
-  background: hsl(var(--h, 220) 45% 35%);
-  border-radius: 8px;
+  width: 22px;
+  height: 22px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--avatar-ink);
+  background: var(--avatar-bg);
+  border-radius: var(--r-ctl);
 }
 
 .min-w-0 {
@@ -395,14 +567,14 @@ body {
 }
 
 .sub {
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   color: var(--bs-secondary-color);
 }
 
 .chip {
   display: inline-block;
   margin-left: 0.35rem;
-  padding: 0.05rem 0.55rem;
+  padding: 0 0.5rem;
   font-size: 0.72rem;
   font-weight: 600;
   color: var(--bs-secondary-color);
@@ -444,7 +616,7 @@ body {
 }
 
 .note {
-  padding: 0.6rem 0.9rem;
+  padding: 0.5rem 0.8rem;
   border-bottom: 1px solid var(--bs-border-color);
 }
 
@@ -456,11 +628,11 @@ body {
 .facts {
   display: grid;
   grid-template-columns: max-content 1fr;
-  gap: 0.3rem 1rem;
-  margin: 0 0 0.75rem;
+  gap: 0.2rem 1rem;
+  margin: 0 0 0.6rem;
 
   dt {
-    font-weight: 600;
+    font-weight: 500;
     color: var(--bs-secondary-color);
   }
 
@@ -474,8 +646,8 @@ body {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.25rem 1rem;
-  padding: 0.5rem 0;
+  gap: 0.2rem 1rem;
+  padding: 0.4rem 0;
 }
 
 .gpu-row {
@@ -488,7 +660,7 @@ body {
 }
 
 .empty {
-  padding: 3rem 1rem;
+  padding: 2rem 1rem;
   text-align: center;
   color: var(--bs-secondary-color);
 }

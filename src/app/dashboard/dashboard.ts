@@ -145,7 +145,7 @@ export class Dashboard implements OnInit, OnDestroy {
 
   protected severity(d: { used: number; size: number }) {
     const pct = (d.used / d.size) * 100;
-    return pct >= 95 ? 'bg-danger' : pct >= 85 ? 'bg-warning' : 'bg-primary';
+    return pct >= 95 ? 'danger' : pct >= 85 ? 'warn' : '';
   }
 
   protected diskPct(d: { used: number; size: number }) {

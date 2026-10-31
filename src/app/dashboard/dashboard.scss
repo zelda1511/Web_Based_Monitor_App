@@ -11,6 +11,7 @@ svg {
 .grid {
   stroke: var(--bs-border-color);
   stroke-width: 1px;
+  stroke-dasharray: 3 4;
 }
 
 .tick {
@@ -66,19 +67,48 @@ svg {
   pointer-events: none;
   background: var(--surface);
   border: 1px solid var(--bs-border-color);
-  border-radius: 8px;
+  border-radius: var(--r-card);
   box-shadow: 0 6px 18px rgb(0 0 0 / 0.14);
   transform: translateX(12px);
 
   &.flip { transform: translateX(calc(-100% - 12px)); }
 }
 
-.progress {
-  height: 8px;
-  background: var(--surface-2);
-  border-radius: 99px;
+.drive-row + .drive-row {
+  margin-top: 0.9rem;
 }
 
-.progress-bar {
-  border-radius: 99px;
+// Hardware facts as label and value rows, two columns wide, like a spec sheet.
+.specs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(24rem, 1fr));
+  gap: 0 2rem;
+  margin: 0;
+  padding: 0 0.9rem;
+}
+
+.spec {
+  display: grid;
+  grid-template-columns: 9rem 1fr;
+  gap: 0.75rem;
+  min-width: 0;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--bs-border-color);
+
+  dt {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.45rem;
+    font-weight: 500;
+    color: var(--bs-secondary-color);
+
+    .icon {
+      margin-top: 1px;
+    }
+  }
+
+  dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
 }

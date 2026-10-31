@@ -28,7 +28,7 @@
     } @else {
       <div class="row g-3 mb-3">
         <div class="col-md-4">
-          <div class="panel stat">
+          <div class="panel stat h-100">
             <div class="stat-label"><app-icon name="battery" />Charge</div>
             <div class="stat-value">{{ n.percent != null ? n.percent + '%' : '-' }}</div>
             <div class="stat-sub text-body-secondary">{{ stateText(n) }}</div>
@@ -41,7 +41,7 @@
           </div>
         </div>
         <div class="col-md-4">
-          <div class="panel stat">
+          <div class="panel stat h-100">
             <div class="stat-label"><app-icon name="check" />Health</div>
             <div class="stat-value" [class]="'tone-' + tone(n.health)">{{ n.health != null ? n.health + '%' : '-' }}</div>
             <div class="progress mt-1" role="img" [attr.aria-label]="'Health ' + (n.health ?? 'unknown') + ' percent'"><span class="progress-bar" [class]="'tone-bg-' + tone(n.health)" [style.width.%]="bar(n.health)"></span></div>
@@ -57,7 +57,7 @@
           </div>
         </div>
         <div class="col-md-4">
-          <div class="panel stat">
+          <div class="panel stat h-100">
             <div class="stat-label"><app-icon name="refresh" />Charge cycles</div>
             <div class="stat-value">{{ n.cycles != null ? n.cycles : '-' }}</div>
             <div class="stat-sub text-body-secondary">Full charges used so far, as the battery counts them</div>

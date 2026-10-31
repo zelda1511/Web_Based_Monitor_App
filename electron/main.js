@@ -7,7 +7,7 @@ const { listSoftware, folderOf } = require('./software');
 const { getProcesses, endTasks } = require('./processes');
 const { listStartup, setStartup } = require('./startup');
 const { scanCleanup, deleteCleanup, defaultTargets, scanTarget, deleteTarget } = require('./cleanup');
-const { listDrivers, scanDriverUpdates, LINKS } = require('./drivers');
+const { listDrivers, checkDriverUpdates, LINKS } = require('./drivers');
 const { listAppUpdates, searchApps, appDetails, installApp, upgradeApp } = require('./winget');
 const { uninstallApp, getSnapshot } = require('./uninstall');
 const { listCatalog, installFromCatalog, exportSelection, importSelection } = require('./catalog');
@@ -168,7 +168,7 @@ ipcMain.handle('drv:list', listDrivers);
 // Only an update the latest scan listed can be installed: the window names it by id, and the revision comes from this list.
 let driverUpdates = new Map();
 ipcMain.handle('drv:updates', async () => {
-  const scan = await scanDriverUpdates();
+  const scan = await checkDriverUpdates();
   driverUpdates = new Map(scan.updates.filter((u) => u.id && u.revision !== null).map((u) => [u.id, u]));
   return scan;
 });

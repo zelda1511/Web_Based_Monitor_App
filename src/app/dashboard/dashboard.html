@@ -10,44 +10,39 @@
     <div class="alert alert-danger" role="alert">{{ e }}</div>
   }
 
-  <div class="row g-3 mb-3">
-    <div class="col-md">
-      <div class="panel stat h-100">
-        <div class="stat-label"><app-icon name="cpu" />CPU</div>
-        <div class="stat-value">{{ percentText(cpuNow()) }}</div>
-        <div class="stat-sub text-body-secondary">
-          @if (overview(); as o) {
-            {{ o.cpu.cores }} cores, {{ o.cpu.threads }} threads
-          }
-        </div>
+  <div class="panel strip mb-3">
+    <div class="stat">
+      <div class="stat-label"><app-icon name="cpu" />CPU</div>
+      <div class="stat-value">{{ percentText(cpuNow()) }}</div>
+      <div class="stat-sub text-body-secondary">
+        @if (overview(); as o) {
+          {{ o.cpu.cores }} cores, {{ o.cpu.threads }} threads
+        }
       </div>
+      <div class="meter" aria-hidden="true"><i [style.width.%]="cpuNow() ?? 0"></i></div>
     </div>
-    <div class="col-md">
-      <div class="panel stat h-100">
-        <div class="stat-label"><app-icon name="memory" />Memory</div>
-        <div class="stat-value">{{ percentText(ramNow()) }}</div>
-        <div class="stat-sub text-body-secondary">
-          @if (live(); as l) {
-            {{ fmt(l.ram.used) }} of {{ fmt(l.ram.total) }} in use
-          }
-        </div>
+    <div class="stat">
+      <div class="stat-label"><app-icon name="memory" />Memory</div>
+      <div class="stat-value">{{ percentText(ramNow()) }}</div>
+      <div class="stat-sub text-body-secondary">
+        @if (live(); as l) {
+          {{ fmt(l.ram.used) }} of {{ fmt(l.ram.total) }} in use
+        }
       </div>
+      <div class="meter" aria-hidden="true"><i [style.width.%]="ramNow() ?? 0"></i></div>
     </div>
-    <div class="col-md">
-      <div class="panel stat h-100">
-        <div class="stat-label"><app-icon name="clock" />Uptime</div>
-        <div class="stat-value">{{ live() ? uptimeText(live()!.uptime) : '-' }}</div>
-        <div class="stat-sub text-body-secondary">Since the last restart</div>
-      </div>
+    <div class="stat">
+      <div class="stat-label"><app-icon name="clock" />Uptime</div>
+      <div class="stat-value">{{ live() ? uptimeText(live()!.uptime) : '-' }}</div>
+      <div class="stat-sub text-body-secondary">Since the last restart</div>
     </div>
     @if (battery(); as b) {
       @if (b.present) {
-        <div class="col-md">
-          <div class="panel stat h-100">
-            <div class="stat-label"><app-icon name="battery" />Battery</div>
-            <div class="stat-value">{{ b.percent != null ? b.percent + '%' : '-' }}</div>
-            <div class="stat-sub text-body-secondary">{{ batteryLine(b) }}</div>
-          </div>
+        <div class="stat">
+          <div class="stat-label"><app-icon name="battery" />Battery</div>
+          <div class="stat-value">{{ b.percent != null ? b.percent + '%' : '-' }}</div>
+          <div class="stat-sub text-body-secondary">{{ batteryLine(b) }}</div>
+          <div class="meter" aria-hidden="true"><i [style.width.%]="b.percent ?? 0"></i></div>
         </div>
       }
     }
@@ -55,83 +50,90 @@
 
   <div class="row g-3 mb-3">
     <div class="col-lg-8">
-      <section class="panel panel-body h-100">
-        <div class="d-flex flex-wrap align-items-center gap-3 mb-2">
-          <h2 class="panel-title mb-0 me-auto">Live usage, last 2 minutes</h2>
+      <section class="panel h-100">
+        <div class="panel-bar">
+          <h2 class="panel-title">Live usage, last 2 minutes</h2>
           <span class="legend"><i class="line-key cpu"></i>CPU</span>
           <span class="legend"><i class="line-key ram"></i>Memory</span>
         </div>
 
-        <div class="chart" (pointerleave)="hoverT.set(null)">
-          <svg
-            [attr.viewBox]="'0 0 ' + view.W + ' ' + view.H"
-            role="img"
-            aria-label="CPU and memory usage over the last 2 minutes"
-            (pointermove)="onMove($event)"
-          >
-            @for (t of ticks; track t.v) {
-              <line class="grid" [attr.x1]="view.LEFT" [attr.x2]="view.RIGHT" [attr.y1]="t.y" [attr.y2]="t.y" />
-              <text class="tick" [attr.x]="view.LEFT - 6" [attr.y]="t.y + 4" text-anchor="end">{{ t.v }}%</text>
-            }
-            <text class="tick" [attr.x]="view.LEFT" [attr.y]="view.H - 4">2 min ago</text>
-            <text class="tick" [attr.x]="view.RIGHT" [attr.y]="view.H - 4" text-anchor="end">now</text>
+        <div class="panel-body">
+          <div class="chart" (pointerleave)="hoverT.set(null)">
+            <svg
+              [attr.viewBox]="'0 0 ' + view.W + ' ' + view.H"
+              role="img"
+              aria-label="CPU and memory usage over the last 2 minutes"
+              (pointermove)="onMove($event)"
+            >
+              @for (t of ticks; track t.v) {
+                <line class="grid" [attr.x1]="view.LEFT" [attr.x2]="view.RIGHT" [attr.y1]="t.y" [attr.y2]="t.y" />
+                <text class="tick" [attr.x]="view.LEFT - 6" [attr.y]="t.y + 4" text-anchor="end">{{ t.v }}%</text>
+              }
+              <text class="tick" [attr.x]="view.LEFT" [attr.y]="view.H - 4">2 min ago</text>
+              <text class="tick" [attr.x]="view.RIGHT" [attr.y]="view.H - 4" text-anchor="end">now</text>
 
-            <polyline class="line cpu" [attr.points]="cpuLine()" />
-            <polyline class="line ram" [attr.points]="ramLine()" />
+              <polyline class="line cpu" [attr.points]="cpuLine()" />
+              <polyline class="line ram" [attr.points]="ramLine()" />
 
+              @if (hovered(); as h) {
+                <line class="crosshair" [attr.x1]="h.point.x" [attr.x2]="h.point.x" [attr.y1]="view.TOP" [attr.y2]="view.BOTTOM" />
+                <circle class="dot cpu" [attr.cx]="h.point.x" [attr.cy]="h.point.cpuY" r="4" />
+                <circle class="dot ram" [attr.cx]="h.point.x" [attr.cy]="h.point.ramY" r="4" />
+              } @else if (last(); as p) {
+                <circle class="dot cpu" [attr.cx]="p.x" [attr.cy]="p.cpuY" r="4" />
+                <circle class="dot ram" [attr.cx]="p.x" [attr.cy]="p.ramY" r="4" />
+              }
+            </svg>
             @if (hovered(); as h) {
-              <line class="crosshair" [attr.x1]="h.point.x" [attr.x2]="h.point.x" [attr.y1]="view.TOP" [attr.y2]="view.BOTTOM" />
-              <circle class="dot cpu" [attr.cx]="h.point.x" [attr.cy]="h.point.cpuY" r="4" />
-              <circle class="dot ram" [attr.cx]="h.point.x" [attr.cy]="h.point.ramY" r="4" />
-            } @else if (last(); as p) {
-              <circle class="dot cpu" [attr.cx]="p.x" [attr.cy]="p.cpuY" r="4" />
-              <circle class="dot ram" [attr.cx]="p.x" [attr.cy]="p.ramY" r="4" />
+              <div class="tip" [class.flip]="h.point.x > view.W / 2" [style.left.%]="(h.point.x / view.W) * 100">
+                <div class="text-body-secondary">{{ h.sample.t | date: 'mediumTime' }}</div>
+                <div><i class="line-key cpu"></i><strong>{{ h.sample.cpu | number: '1.0-0' }}%</strong> CPU</div>
+                <div><i class="line-key ram"></i><strong>{{ h.sample.ram | number: '1.0-0' }}%</strong> Memory</div>
+              </div>
             }
-          </svg>
-          @if (hovered(); as h) {
-            <div class="tip" [class.flip]="h.point.x > view.W / 2" [style.left.%]="(h.point.x / view.W) * 100">
-              <div class="text-body-secondary">{{ h.sample.t | date: 'mediumTime' }}</div>
-              <div><i class="line-key cpu"></i><strong>{{ h.sample.cpu | number: '1.0-0' }}%</strong> CPU</div>
-              <div><i class="line-key ram"></i><strong>{{ h.sample.ram | number: '1.0-0' }}%</strong> Memory</div>
-            </div>
-          }
+          </div>
         </div>
       </section>
     </div>
 
     <div class="col-lg-4">
-      <section class="panel panel-body h-100">
-        <h2 class="panel-title"><app-icon name="disk" />Disk space</h2>
-        @for (d of live()?.disks; track d.name) {
-          <div class="mb-3">
-            <div class="d-flex justify-content-between">
-              <strong>{{ d.name }}</strong>
-              <span class="text-body-secondary">{{ fmt(d.size - d.used) }} free of {{ fmt(d.size) }}</span>
+      <section class="panel h-100">
+        <div class="panel-bar"><h2 class="panel-title"><app-icon name="disk" />Disk space</h2></div>
+        <div class="panel-body">
+          @for (d of live()?.disks; track d.name) {
+            <div class="drive-row">
+              <div class="d-flex justify-content-between">
+                <strong>{{ d.name }}</strong>
+                <span class="text-body-secondary">{{ fmt(d.size - d.used) }} free of {{ fmt(d.size) }}</span>
+              </div>
+              <div [class]="'meter ' + severity(d)" role="progressbar" [attr.aria-label]="'Disk ' + d.name + ' used'" [attr.aria-valuenow]="diskPct(d)" aria-valuemin="0" aria-valuemax="100">
+                <i [style.width.%]="diskPct(d)"></i>
+              </div>
             </div>
-            <div class="progress mt-1" role="progressbar" [attr.aria-label]="'Disk ' + d.name + ' used'" [attr.aria-valuenow]="diskPct(d)" aria-valuemin="0" aria-valuemax="100">
-              <div [class]="'progress-bar ' + severity(d)" [style.width.%]="diskPct(d)"></div>
-            </div>
-          </div>
-        } @empty {
-          <p class="text-body-secondary mb-0">Reading disks...</p>
-        }
+          } @empty {
+            <p class="text-body-secondary mb-0">Reading disks...</p>
+          }
+        </div>
       </section>
     </div>
   </div>
 
   @if (parts().length) {
-    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
-      @for (p of parts(); track p.title) {
-        <div class="col">
-          <section class="panel panel-body h-100">
-            <h2 class="panel-title"><app-icon [name]="p.icon" />{{ p.title }}</h2>
-            @for (line of p.lines; track $index) {
-              <div [class.text-body-secondary]="$index > 0">{{ line }}</div>
-            }
-          </section>
-        </div>
-      }
-    </div>
+    <section class="panel">
+      <div class="panel-bar"><h2 class="panel-title">This PC</h2></div>
+      <dl class="specs">
+        @for (p of parts(); track p.title) {
+          <div class="spec">
+            <dt><app-icon [name]="p.icon" />{{ p.title }}</dt>
+            <dd>
+              @for (line of p.lines; track $index) {
+                <div [class.text-body-secondary]="$index > 0">{{ line }}</div>
+              }
+            </dd>
+          </div>
+        }
+      </dl>
+    </section>
   } @else if (!error()) {
     <p class="text-body-secondary">Reading hardware (the first load takes a few seconds)...</p>
   }

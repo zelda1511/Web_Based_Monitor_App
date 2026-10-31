@@ -3,7 +3,7 @@
     <div>
       <h1>Drivers</h1>
       <p class="text-body-secondary">
-        What is installed, and whether Windows Update has newer ones. A driver is installed only if you press Install on one that Windows Update lists.
+        Hardware drivers first. Check Windows Update to see which ones have a newer driver. Nothing is installed until you press Update or Install on one and confirm; a restore point is made first.
         @if (data(); as d) {
           {{ d.drivers.length }} drivers, {{ thirdPartyCount() }} from vendors other than Microsoft.
         }
@@ -65,7 +65,7 @@
         <button type="button" class="btn btn-quiet" (click)="open('optional-updates')">Or open Windows' Optional updates</button>
       }
     } @else {
-      <p class="mb-0 text-body-secondary">Not checked yet. The check only looks; it downloads and installs nothing until you press Install on an update.</p>
+      <p class="mb-0 text-body-secondary">Not checked yet. The check only looks; it downloads and installs nothing until you press Install on an update. Updates it finds are also marked on their row in the table below.</p>
     }
   </section>
 
@@ -84,8 +84,8 @@
               from {{ g.date ?? 'an unknown date' }}
             </div>
           </div>
-          @if (vendorOf(g); as v) {
-            <button type="button" class="btn btn-quiet" (click)="open(v.key)">{{ v.label }}</button>
+          @if (g.vendor; as v) {
+            <button type="button" class="btn btn-quiet" (click)="open(v)">{{ vendorLabels[v] }}</button>
           } @else if (g.microsoft) {
             <span class="text-body-secondary">Windows' basic display driver is in use. Install the maker's driver.</span>
           }
@@ -110,19 +110,28 @@
     </section>
   }
 
-  <div class="d-flex flex-wrap align-items-center gap-3 mb-2">
-    <h2 class="h5 mb-0 me-auto">Installed drivers</h2>
-    <label class="form-check form-switch mb-0">
-      <input class="form-check-input" type="checkbox" role="switch" [checked]="showMicrosoft()" (change)="onToggleMicrosoft($event)" />
-      <span class="form-check-label">Microsoft drivers</span>
-    </label>
-    <label class="search">
-      <app-icon name="search" />
-      <input class="form-control" type="search" placeholder="Search drivers" aria-label="Search drivers" [value]="query()" (input)="onSearch($event)" />
-    </label>
-  </div>
-
-  <div class="panel">
+  <section class="panel">
+    <div class="panel-bar">
+      <h2 class="panel-title"><app-icon name="cpu" />Installed drivers</h2>
+      <label class="form-check form-switch mb-0">
+        <input class="form-check-input" type="checkbox" role="switch" [checked]="hardwareOnly()" (change)="onToggleHardware($event)" />
+        <span class="form-check-label">Hardware only</span>
+      </label>
+      <label class="form-check form-switch mb-0">
+        <input class="form-check-input" type="checkbox" role="switch" [checked]="showMicrosoft()" (change)="onToggleMicrosoft($event)" />
+        <span class="form-check-label">Microsoft drivers</span>
+      </label>
+      <label class="search">
+        <app-icon name="search" />
+        <input class="form-control" type="search" placeholder="Search drivers" aria-label="Search drivers" [value]="query()" (input)="onSearch($event)" />
+      </label>
+    </div>
+    <p class="note mb-0 text-body-secondary">
+      @if (hiddenSoftware(); as n) {
+        {{ n }} software component{{ n === 1 ? '' : 's' }} (audio effects and similar) hidden. Turn off Hardware only to see them.
+      }
+      Windows Update only offers drivers that their makers have published to it, so "None offered" does not mean there is no newer driver. Graphics drivers from NVIDIA, AMD and Intel usually come from the maker's own page; this app cannot see what is newest there.
+    </p>
     @if (loading()) {
       <div class="empty"><span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Reading drivers...</div>
     } @else {
@@ -139,6 +148,7 @@
                 </button>
               </th>
             }
+            <th scope="col">Windows Update</th>
             <th scope="col"><span class="visually-hidden">Flags</span></th>
           </tr>
         </thead>
@@ -147,11 +157,34 @@
             <tr>
               <td>
                 {{ d.name }}
-                <span class="sub d-block">{{ d.cls ?? '' }}</span>
+                <span class="sub d-block" [attr.title]="d.cls">{{ d.kind }}</span>
               </td>
               <td [class.text-body-secondary]="!d.provider">{{ d.provider ?? 'Unknown' }}</td>
               <td class="text-nowrap">{{ d.version ?? '-' }}</td>
               <td class="text-nowrap">{{ d.date ?? '-' }}</td>
+              <td class="text-nowrap">
+                @if (d.deviceId && updateByDevice().get(d.deviceId); as u) {
+                  <span class="chip chip-ok ms-0" [attr.title]="u.title">Update available</span>
+                  @if (u.id) {
+                    <button type="button" class="btn btn-quiet btn-sm ms-2" [attr.aria-label]="'Update ' + d.name" [disabled]="installingId() !== null || checking()" (click)="install(u)">
+                      @if (installingId() === u.id) {
+                        <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Updating...
+                      } @else {
+                        Update
+                      }
+                    </button>
+                  }
+                } @else if (scan()) {
+                  <span class="text-body-secondary">None offered</span>
+                  @if (d.kind === 'Graphics' && d.vendor; as v) {
+                    <button type="button" class="btn btn-quiet btn-sm ms-2" title="Opens the maker's page in your browser. This app cannot tell whether it has a newer driver." (click)="open(v)">{{ vendorLabels[v] }}</button>
+                  }
+                } @else if (checking()) {
+                  <span class="text-body-secondary">Checking...</span>
+                } @else {
+                  <span class="text-body-secondary">Not checked</span>
+                }
+              </td>
               <td class="text-nowrap actions">
                 @if (d.signed === false) {
                   <span class="chip chip-warn" title="Windows could not confirm who made this driver">Unsigned</span>
@@ -162,10 +195,10 @@
               </td>
             </tr>
           } @empty {
-            <tr><td colspan="5" class="empty">No drivers match.</td></tr>
+            <tr><td colspan="6" class="empty">No drivers match.</td></tr>
           }
         </tbody>
       </table>
     }
-  </div>
+  </section>
 </div>

@@ -146,6 +146,14 @@ export interface DriverRow {
   signed: boolean | null;
   microsoft: boolean;
   old: boolean;
+  /** A device on a real bus (PCI, USB, ACPI...) as opposed to a software component such as an audio effect. */
+  hardware: boolean;
+  /** Plain kind: Graphics, Network, Audio, Chipset and system, Bluetooth, Storage, USB, Input... */
+  kind: string;
+  /** Key of the maker's driver page the app can open (nvidia, amd, intel), from the provider name. */
+  vendor: 'nvidia' | 'amd' | 'intel' | null;
+  /** Ties a row to the updates found for it; never sent back to the main process. */
+  deviceId: string | null;
 }
 
 export interface DriverProblem {
@@ -238,6 +246,8 @@ export interface DriverUpdate {
   date: string | null;
   sizeBytes: number | null;
   downloaded: boolean;
+  /** Installed devices (their `deviceId`) this update is for; empty when it matches none of them. */
+  deviceIds: string[];
 }
 
 export interface UpdateScan {

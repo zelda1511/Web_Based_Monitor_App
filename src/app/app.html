@@ -1,41 +1,43 @@
 <div class="shell">
-  <aside class="sidebar">
-    <div class="brand">
+  <aside class="rail">
+    <div class="brand" title="Webase System Monitor">
       <span class="logo"><app-icon name="processes" /></span>
-      <span>Webase<small>System Monitor</small></span>
+      <span class="visually-hidden">Webase System Monitor</span>
     </div>
 
-    <nav aria-label="Sections">
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"><app-icon name="dashboard" />Dashboard</a>
-      <a routerLink="/software" routerLinkActive="active"><app-icon name="software" />Software</a>
-      <a routerLink="/updates" routerLinkActive="active"><app-icon name="download" />App updates</a>
-      <a routerLink="/catalog" routerLinkActive="active"><app-icon name="package" />App catalog</a>
-      <a routerLink="/find" routerLinkActive="active"><app-icon name="search" />Find apps</a>
-      <a routerLink="/processes" routerLinkActive="active"><app-icon name="processes" />Processes</a>
-      <a routerLink="/startup" routerLinkActive="active"><app-icon name="power" />Startup</a>
-      <a routerLink="/cleanup" routerLinkActive="active"><app-icon name="trash" />Cleanup</a>
-      <a routerLink="/disk" routerLinkActive="active"><app-icon name="disk" />Disk space</a>
-      <a routerLink="/battery" routerLinkActive="active"><app-icon name="battery" />Battery</a>
-      <a routerLink="/automation" routerLinkActive="active"><app-icon name="bell" />Automation</a>
-      <a routerLink="/backups" routerLinkActive="active"><app-icon name="archive" />Backups</a>
-      <a routerLink="/drivers" routerLinkActive="active"><app-icon name="board" />Drivers</a>
-      <a routerLink="/blocked" routerLinkActive="active"><app-icon name="shield" />Blocked</a>
+    <nav class="sections" aria-label="Sections">
+      @for (s of sections; track s.id) {
+        <a [routerLink]="target(s)" [class.active]="current().id === s.id" [attr.aria-current]="current().id === s.id ? 'true' : null">
+          <app-icon [name]="s.icon" />
+          <span>{{ s.label }}</span>
+        </a>
+      }
     </nav>
-
-    <div class="appearance">
-      <span class="caption" id="theme-label">Appearance</span>
-      <div class="theme" role="group" aria-labelledby="theme-label">
-        @for (m of modes; track m.id) {
-          <button type="button" [attr.aria-pressed]="theme.mode() === m.id" [attr.aria-label]="m.label" [title]="m.label" (click)="theme.set(m.id)">
-            <app-icon [name]="m.icon" />
-          </button>
-        }
-      </div>
-    </div>
   </aside>
 
-  <main>
-    <router-outlet />
-  </main>
+  <div class="workspace">
+    <header class="bar">
+      <nav class="tabs" [attr.aria-label]="current().label + ' pages'">
+        @for (p of current().pages; track p.path) {
+          <a [routerLink]="p.path" routerLinkActive="active" ariaCurrentWhenActive="page" [routerLinkActiveOptions]="{ exact: true }">{{ p.label }}</a>
+        }
+      </nav>
+
+      <div class="appearance">
+        <span class="visually-hidden" id="theme-label">Appearance</span>
+        <div class="theme" role="group" aria-labelledby="theme-label">
+          @for (m of modes; track m.id) {
+            <button type="button" [attr.aria-pressed]="theme.mode() === m.id" [attr.aria-label]="m.label" [title]="m.label" (click)="theme.set(m.id)">
+              <app-icon [name]="m.icon" />
+            </button>
+          }
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <router-outlet />
+    </main>
+  </div>
 </div>
 <app-ui-host />

@@ -1,6 +1,6 @@
 .progress {
   display: block;
-  height: 8px;
+  height: 6px;
   background: var(--surface-2);
   border-radius: 99px;
 }
@@ -18,7 +18,7 @@
 }
 
 .tone-fair {
-  color: #b7791f;
+  color: var(--warn);
 }
 
 .tone-poor {
@@ -30,7 +30,7 @@
 }
 
 .progress-bar.tone-bg-fair {
-  background: #d69e2e;
+  background: var(--warn-fill);
 }
 
 .progress-bar.tone-bg-poor {

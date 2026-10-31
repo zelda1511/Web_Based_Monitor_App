@@ -1,9 +1,7 @@
-.master {
-  border-left: 4px solid var(--bs-border-color);
-
-  &.on {
-    border-left-color: var(--accent);
-  }
+// The master switch panel turns accent-tinted while Automation is on.
+.master.on {
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--bs-border-color));
 }
 
 .warn-row {
