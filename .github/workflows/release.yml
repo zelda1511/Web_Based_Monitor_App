@@ -23,7 +23,9 @@ jobs:
       - run: npm ci
       - run: npm run test:main
       - run: npm test -- --watch=false
-      - run: npm run dist
+      # Edits the exe's product name/version (SignPath requires them); not done on the dev PC, where winCodeSign cannot unpack.
+      - run: npx ng build
+      - run: npx electron-builder --win zip -c.win.signAndEditExecutable=true
       - uses: actions/upload-artifact@v6
         id: upload-unsigned
         with:

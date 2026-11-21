@@ -1,59 +1,39 @@
-# WebaseApp
+# Webase System Monitor
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.2.2.
+A Windows desktop app that shows what is running and what is installed, and helps you clean up: uninstall apps, update apps and drivers, remove leftovers and temporary files. It also has pages for startup items, battery, recorded CPU and memory history, blocked files, and a read-only look at Windows' own protection settings.
 
-## Development server
+Windows only. Built with Electron and Angular. Licensed under the [MIT License](LICENSE).
 
-To start a local development server, run:
+## Safety
 
-```bash
-ng serve
+The app can delete files and registry keys, so it is careful:
+
+- Anything that deletes or uninstalls shows a preview, asks you to confirm, and makes a backup first.
+- It never self-elevates. Changes that need administrator rights are refused with a message.
+- The page never sends a path or command line; the main process looks everything up itself.
+
+## Install and uninstall
+
+Download the zip from the [Releases](../../releases) page, unzip it anywhere, and run `Webase System Monitor.exe`. There is no installer: to uninstall, close the app and delete the folder. Settings are kept in a folder under `%APPDATA%`, and history, the activity list and logs in `%LOCALAPPDATA%\WebaseSystemMonitor`; delete those too if you want everything gone.
+
+## Run from source
+
+```powershell
+npm install
+node node_modules/electron/install.js
+npm start
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Tests: `npm run test:main` (Node tests for `electron/`), `npm test` (Angular), `npm run test:e2e` (the real window, about 3 minutes).
 
-## Code scaffolding
+## Code signing policy
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org). *(Pending: this is the policy we are applying under. Releases are unsigned until SignPath approves the project.)*
 
-```bash
-ng generate component component-name
-```
+- **Committers, reviewers and approvers:** the project owner, [zelda1511](https://github.com/zelda1511). Every release is built by the GitHub Actions workflow in `.github/workflows/release.yml` from this repository and must be approved by hand before it is signed.
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Privacy policy
 
-```bash
-ng generate --help
-```
+This program will not transfer any information to other networked systems unless specifically requested by the user or the person installing or operating it.
 
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+In practice: the app collects nothing and sends nothing. Everything it records (settings, the optional CPU and memory history) stays on your PC. When you ask it to update an app or a driver, Windows' own tools (`winget`, Windows Update) contact their servers, and driver vendor pages open in your browser only when you click them.

@@ -12,7 +12,7 @@ Windows-only desktop app: see what runs and what is installed, uninstall apps, u
 - `npm start` builds Angular (development) and opens the window. No hot reload: run it again after a change.
 - `npm run test:main` Node tests for `electron/`. `npm test` Angular tests (Vitest).
 - `test:main` lists every test file by name in `package.json`: a new `electron/*.test.js` is not run until you add it there.
-- One test: `node --test electron/winget.test.js` (main) or `npx ng test --include src/app/format.spec.ts` (Angular). `README.md` is the stock Angular CLI text; ignore it.
+- One test: `node --test electron/winget.test.js` (main) or `npx ng test --include src/app/format.spec.ts` (Angular). `README.md` is the public page (what the app is, install/uninstall, the code signing and privacy policy SignPath requires): keep those two sections true.
 - `npm run test:e2e` builds, starts a test copy (own data folder, own debugging port) and visits every page in both themes, at 1200x780, 960x600 and 1280x672, in forced-colors mode, plus a keyboard walk. It fails on console errors (a blocked script or style is one), sideways scroll, empty headings, unnamed controls, missing landmarks, missing focus rings, or a Dashboard with no data. About 3 minutes; it only navigates and switches the theme. `WEBASE_E2E_EXE=<path to the packed exe>` runs the packed app instead.
 - `npm run test:live` runs `driver-install.live.test.js`: needs the internet, takes about 20 s (a Windows Update search), changes nothing. Not part of `test:main`.
 - `npm run pack` / `dist` / `dist:installer` build into `release/`. The NSIS installer cannot be built or run on this PC (see Phase 7).
