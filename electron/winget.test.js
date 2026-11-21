@@ -175,3 +175,21 @@ test('reads `winget list`: ids with versions, and a newer version when the Avail
   assert.deepEqual(parseInstalled(''), []);
   assert.deepEqual(parseInstalled('No installed package found matching input criteria.'), []);
 });
+
+test('update list cache: the page reads fresh, an update reuses a recent list, and an updated app leaves it', async () => {
+  const { createListCache } = require('./winget');
+  let t = 0;
+  let loads = 0;
+  const c = createListCache({ load: async () => (loads++, [{ id: 'A.a' }, { id: 'B.b' }]), maxAgeMs: 1000, now: () => t });
+  assert.equal((await c.recent()).length, 2); // nothing saved yet: reads
+  assert.equal(loads, 1);
+  await c.recent();
+  assert.equal(loads, 1); // reused
+  await c.fresh();
+  assert.equal(loads, 2); // the page always reads
+  c.drop('A.a');
+  assert.deepEqual(await c.recent(), [{ id: 'B.b' }]);
+  t = 1000; // too old: reads again
+  assert.equal((await c.recent()).length, 2);
+  assert.equal(loads, 3);
+});

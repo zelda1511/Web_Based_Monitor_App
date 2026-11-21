@@ -12,17 +12,25 @@ const clip = (v) => (typeof v === 'string' ? v.replace(/\s+/g, ' ').trim().slice
 
 function createActivity({ file, now = Date.now, fsApi = fs } = {}) {
   let count = null;
+  let cached = null; // { mtimeMs, size, entries }: the page asks every 20 s, so the file is parsed again only after it changed
+
+  const parse = (text) =>
+    text.split('\n').filter(Boolean).flatMap((l) => {
+      try {
+        const o = JSON.parse(l);
+        return o && typeof o === 'object' && !Array.isArray(o) ? [o] : [];
+      } catch {
+        return []; // a damaged line is skipped, never fatal
+      }
+    });
 
   function readAll() {
     try {
-      return fsApi.readFileSync(file, 'utf8').split('\n').filter(Boolean).flatMap((l) => {
-        try {
-          const o = JSON.parse(l);
-          return o && typeof o === 'object' && !Array.isArray(o) ? [o] : [];
-        } catch {
-          return []; // a damaged line is skipped, never fatal
-        }
-      });
+      const st = fsApi.statSync(file);
+      if (cached && cached.mtimeMs === st.mtimeMs && cached.size === st.size) return cached.entries;
+      const entries = parse(fsApi.readFileSync(file, 'utf8'));
+      cached = { mtimeMs: st.mtimeMs, size: st.size, entries };
+      return entries;
     } catch {
       return [];
     }

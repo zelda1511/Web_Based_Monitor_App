@@ -5,6 +5,7 @@ import { errorText, formatAge, formatBytes } from '../format';
 import { Icon } from '../icon';
 import { SystemService } from '../system.service';
 import { UiService } from '../ui.service';
+import { whenVisible } from '../visible';
 
 const REFRESH_MS = 20000;
 
@@ -49,6 +50,8 @@ export class Automation implements OnInit, OnDestroy {
   private refresh() {
     if (this.stopped) return;
     this.timer = setTimeout(async () => {
+      await whenVisible();
+      if (this.stopped) return;
       await this.auto.load();
       this.refresh();
     }, REFRESH_MS);

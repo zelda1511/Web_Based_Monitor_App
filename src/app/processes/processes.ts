@@ -5,6 +5,7 @@ import { avatarHue, compareValues, errorText, formatBytes } from '../format';
 import { Icon } from '../icon';
 import { SystemService } from '../system.service';
 import { UiService } from '../ui.service';
+import { whenVisible } from '../visible';
 
 type SortKey = 'name' | 'count' | 'cpu' | 'memBytes';
 
@@ -59,6 +60,8 @@ export class Processes implements OnInit, OnDestroy {
   }
 
   private async poll() {
+    await whenVisible(); // a hidden window starts no PowerShell
+    if (this.stopped) return;
     await this.refresh();
     if (!this.stopped) this.timer = setTimeout(() => this.poll(), POLL_MS);
   }

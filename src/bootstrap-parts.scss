@@ -1,0 +1,26 @@
+// Only the Bootstrap parts the app uses (same order as bootstrap/scss/bootstrap.scss). Not included: images, containers, transitions,
+// dropdown, button group, nav, navbar, card, accordion, breadcrumb, pagination, badge, list group, close, toasts, modal, tooltip,
+// popover, carousel, offcanvas, placeholders. To use one of those classes, add its import here first.
+// Configuration
+@import "bootstrap/scss/functions";
+@import "bootstrap/scss/variables";
+@import "bootstrap/scss/variables-dark";
+@import "bootstrap/scss/maps";
+@import "bootstrap/scss/mixins";
+@import "bootstrap/scss/utilities";
+
+// Layout & components
+@import "bootstrap/scss/root";
+@import "bootstrap/scss/reboot";
+@import "bootstrap/scss/type";
+@import "bootstrap/scss/grid";
+@import "bootstrap/scss/tables";
+@import "bootstrap/scss/forms";
+@import "bootstrap/scss/buttons";
+@import "bootstrap/scss/alert";
+@import "bootstrap/scss/progress";
+@import "bootstrap/scss/spinners";
+
+// Helpers and utilities
+@import "bootstrap/scss/helpers";
+@import "bootstrap/scss/utilities/api";

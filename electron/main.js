@@ -1,10 +1,21 @@
 const { app, BrowserWindow, Menu, Notification, Tray, dialog, ipcMain, nativeImage, nativeTheme, powerMonitor, shell } = require('electron');
+const path = require('path');
+
+// A test copy keeps its settings, single-instance lock and cache in its own folder, so it never touches (or is stopped by) your own copy.
+if (process.env.WEBASE_DATA_DIR) app.setPath('userData', path.resolve(process.env.WEBASE_DATA_DIR));
+
+// A second copy hands over to the running one (which shows its window) and quits before loading anything else.
+const gotLock = app.requestSingleInstanceLock();
+if (!gotLock) {
+  app.quit();
+  return; // CommonJS allows a top-level return: nothing below runs in the copy that quits
+}
+
 const crypto = require('crypto');
 const fs = require('fs/promises');
-const path = require('path');
 const { getOverview, getLive, getDisks } = require('./system');
 const { listSoftware, folderOf } = require('./software');
-const { getProcesses, endTasks } = require('./processes');
+const { getProcesses, endTasks, stopSession } = require('./processes');
 const { listStartup, setStartup } = require('./startup');
 const { scanCleanup, deleteCleanup, defaultTargets, scanTarget, deleteTarget } = require('./cleanup');
 const { listDrivers, checkDriverUpdates, LINKS } = require('./drivers');
@@ -28,9 +39,6 @@ const { createSettings } = require('./settings');
 const { createActivity } = require('./activity');
 const { createNotifier, ROUTES } = require('./notify');
 const { createAutomation, makeCleaner } = require('./automation');
-
-// A test copy keeps its settings, single-instance lock and cache in its own folder, so it never touches (or is stopped by) your own copy.
-if (process.env.WEBASE_DATA_DIR) app.setPath('userData', path.resolve(process.env.WEBASE_DATA_DIR));
 
 // Errors go to %LOCALAPPDATA%\WebaseSystemMonitor\logs\app.log (channel and message only, never the request). 'uncaughtExceptionMonitor'
 // only watches, so Electron still shows its own error box.
@@ -58,7 +66,7 @@ ipcMain.handle('sw:openFolder', async (_e, key) => {
   const r = folderOf(key);
   return r.error ?? shell.openPath(r.dir); // '' on success, else an error message
 });
-ipcMain.handle('proc:list', getProcesses);
+ipcMain.handle('proc:list', () => getProcesses());
 ipcMain.handle('proc:end', (_e, pids) => endTasks(pids));
 ipcMain.handle('startup:list', listStartup);
 ipcMain.handle('startup:set', (_e, id, enabled) => setStartup(id, enabled));
@@ -189,8 +197,6 @@ ipcMain.handle('ui:setTheme', (_e, mode) => {
 
 // ---- Automation: settings, the tray, warnings and the cleaning of old temp files (see PLAN.md, Phase 14) ----
 
-const gotLock = app.requestSingleInstanceLock(); // a second copy hands over to the running one
-if (!gotLock) app.quit();
 const settings = createSettings({ file: path.join(app.getPath('userData'), 'settings.json') });
 settings.load();
 // with WEBASE_DATA_DIR (test copies) the activity list stays in that folder too, so a test never writes into the real one
@@ -213,6 +219,9 @@ function createWindow(route) {
     show: false,
     autoHideMenuBar: true,
     icon: iconPath,
+    // --bs-body-bg of each theme (src/styles.scss), so a resize or a slow page never shows white. It follows the theme chosen in the window
+    // once the page has sent it (ui:setTheme); until then, Windows' own setting.
+    backgroundColor: nativeTheme.shouldUseDarkColors ? '#1a1a1c' : '#f5f5f7',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -351,9 +360,9 @@ ipcMain.handle('app:quit', () => {
 
 app.on('second-instance', () => showWindow());
 app.on('before-quit', () => { quitting = true; });
+app.on('will-quit', () => stopSession()); // the kept PowerShell also exits by itself when its input closes
 
 app.whenReady().then(() => {
-  if (!gotLock) return;
   automation = createAutomation({
     settings,
     notify: notifier.notify,

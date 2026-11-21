@@ -144,7 +144,28 @@ async function run(args, timeout) {
   throw new Error(`winget could not finish (${code}). Try again.`);
 }
 
-const listAppUpdates = async () => parseUpgrades(await run(['upgrade'], 120000));
+// The last update list, kept so an update started from the Updates page does not run `winget upgrade` (up to 2 minutes, on the
+// network) a second time. The page's own list is always read fresh; only upgradeApp reuses a list younger than maxAgeMs.
+function createListCache({ load, maxAgeMs = 10 * 60_000, now = Date.now }) {
+  let saved = null; // { at, rows }
+  return {
+    async fresh() {
+      const rows = await load();
+      saved = { at: now(), rows };
+      return rows;
+    },
+    async recent() {
+      return saved && now() - saved.at < maxAgeMs ? saved.rows : this.fresh();
+    },
+    // an app that was just updated is no longer an update; the other rows stay valid
+    drop(id) {
+      if (saved) saved = { ...saved, rows: saved.rows.filter((u) => u.id !== id) };
+    },
+  };
+}
+
+const updateList = createListCache({ load: async () => parseUpgrades(await run(['upgrade'], 120000)) });
+const listAppUpdates = () => updateList.fresh();
 
 // `winget list`: what winget recognises as installed, by package id. The 4th column is "Available" only when some app has an update;
 // otherwise it is "Source", which is told apart the same way parseSearch does.
@@ -258,7 +279,7 @@ async function upgradeApp(id) {
   if (!PACKAGE_ID.test(String(id))) throw new Error('That is not a valid package id.');
   return withLock(async () => {
     const startedAt = Date.now();
-    const row = (await listAppUpdates()).find((u) => u.id === id);
+    const row = (await updateList.recent()).find((u) => u.id === id);
     const why = whyNotUpgrade(row);
     if (why) throw new Error(why);
 
@@ -281,6 +302,7 @@ async function upgradeApp(id) {
 
     const now = versionFromList((await exec(['list', '--id', id, '--exact'], 60000)).stdout, id);
     const updated = now !== null && now !== row.version;
+    if (updated) updateList.drop(id);
     return { ...base, to: now, updated, exitCode, message: updated ? null : await explainFailure(startedAt, installMessage(output, exitCode)) };
   });
 }
@@ -323,4 +345,4 @@ async function installApp(id) {
   });
 }
 
-module.exports = { installApp, upgradeApp, elevatedUpgradeCommand, elevatedInstallCommand, needsElevatedInstall, needsElevation, whyNotUpgrade, versionFromList, installMessage, listAppUpdates, listInstalled, parseInstalled, searchApps, appDetails, parseUpgrades, parseSearch, parseDetails, parseTables, licenseHint, QUERY, PACKAGE_ID };
+module.exports = { createListCache, installApp, upgradeApp, elevatedUpgradeCommand, elevatedInstallCommand, needsElevatedInstall, needsElevation, whyNotUpgrade, versionFromList, installMessage, listAppUpdates, listInstalled, parseInstalled, searchApps, appDetails, parseUpgrades, parseSearch, parseDetails, parseTables, licenseHint, QUERY, PACKAGE_ID };

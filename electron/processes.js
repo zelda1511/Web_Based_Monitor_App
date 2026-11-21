@@ -1,10 +1,8 @@
 const os = require('os');
 const path = require('path');
-const { promisify } = require('util');
-const execFile = promisify(require('child_process').execFile);
+const { createPsSession } = require('./ps-session');
 
 const SCRIPT = String.raw`
-[Console]::OutputEncoding = New-Object System.Text.UTF8Encoding $false
 $p = Get-Process -ErrorAction SilentlyContinue | Select-Object Id, ProcessName, CPU, WorkingSet64, MainWindowTitle
 ConvertTo-Json -InputObject @($p) -Compress
 `;
@@ -49,12 +47,11 @@ function whyNotEnd(pid, known) {
 let prev = { at: 0, cpu: new Map() };
 let known = new Map();
 
-async function getProcesses() {
-  const { stdout } = await execFile('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', SCRIPT], {
-    maxBuffer: 16 * 1024 * 1024,
-    timeout: 30000,
-    windowsHide: true,
-  });
+// One PowerShell kept for the page's 5-second refresh instead of a new one each time; it stops after a minute without a request.
+const session = createPsSession({ script: SCRIPT, idleMs: 60_000, timeoutMs: 30_000 });
+
+async function getProcesses({ read = session.run } = {}) {
+  const stdout = await read();
   const raw = [].concat(JSON.parse(stdout.replace(/^﻿/, '')) ?? []).filter((r) => r && r.ProcessName);
   const now = Date.now();
   const secs = (now - prev.at) / 1000;
@@ -87,4 +84,4 @@ async function endTasks(pids) {
   });
 }
 
-module.exports = { getProcesses, endTasks, groupProcesses, whyNotEnd, isProtected };
+module.exports = { stopSession: session.stop, getProcesses, endTasks, groupProcesses, whyNotEnd, isProtected };

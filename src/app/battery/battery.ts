@@ -4,6 +4,7 @@ import { Automate } from '../automate-button';
 import { errorText, formatMinutes } from '../format';
 import { Icon } from '../icon';
 import { SystemService } from '../system.service';
+import { whenVisible } from '../visible';
 
 const POLL_MS = 15000;
 
@@ -42,6 +43,8 @@ export class Battery implements OnInit {
   private async poll() {
     if (this.stopped) return;
     this.timer = setTimeout(async () => {
+      await whenVisible();
+      if (this.stopped) return;
       await this.readNow();
       this.poll();
     }, POLL_MS);

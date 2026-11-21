@@ -5,6 +5,7 @@ import { BatteryNow, Live, Overview } from '../api';
 import { errorText, formatBytes, formatUptime } from '../format';
 import { Icon } from '../icon';
 import { SystemService } from '../system.service';
+import { whenVisible } from '../visible';
 
 const MAX_SAMPLES = 60;
 const POLL_MS = 2000;
@@ -126,6 +127,8 @@ export class Dashboard implements OnInit, OnDestroy {
 
   // Its own, slower poll (each read starts PowerShell). A PC without a battery is asked once, then never again.
   private async pollBattery() {
+    await whenVisible();
+    if (this.stopped) return;
     try {
       const b = await this.sys.battery();
       this.battery.set(b);
@@ -142,6 +145,8 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   private async poll() {
+    await whenVisible(); // nothing is read while the window is minimized or in the tray
+    if (this.stopped) return;
     try {
       const l = await this.sys.live();
       this.live.set(l);

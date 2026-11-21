@@ -145,3 +145,17 @@ test('a folder that cannot be written does not break the automation', () => {
   assert.doesNotThrow(() => a.add({ kind: 'note' }));
   assert.deepEqual(a.recent(), []);
 });
+
+test('the activity list is parsed again only after the file changed', () => {
+  const file = tmp();
+  let reads = 0;
+  const a = createActivity({ file, fsApi: { ...fs, readFileSync: (...x) => (reads++, fs.readFileSync(...x)) } });
+  a.add({ kind: 'note', title: 'one' });
+  reads = 0;
+  a.recent();
+  a.recent();
+  assert.equal(reads, 0); // add() had already parsed the file, and it has not changed since
+  fs.appendFileSync(file, `${JSON.stringify({ at: 1, kind: 'note', title: 'from another copy' })}\n`);
+  assert.equal(a.recent()[0].title, 'from another copy');
+  assert.equal(reads, 1);
+});
