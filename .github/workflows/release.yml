@@ -44,7 +44,7 @@ jobs:
       # the secret SIGNPATH_API_TOKEN, and replace the three ids below with the ones SignPath gives you.
       - name: Sign with SignPath
         if: ${{ vars.SIGNPATH_ENABLED == 'true' }}
-        uses: signpath/github-action-submit-signing-request@ced31329c0317e779dad2eec2a7c3bb46ea1343e # v1
+        uses: signpath/github-action-submit-signing-request@4a84eb4ad763290f059275786f2deed97c2c672b # v3.1
         with:
           api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
           organization-id: 'REPLACE_WITH_ORGANIZATION_ID'
