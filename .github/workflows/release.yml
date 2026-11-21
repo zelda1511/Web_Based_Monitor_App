@@ -32,7 +32,7 @@ jobs:
       # bash, because PowerShell splits -c.win... at the dot and electron-builder then reads it as a config file path.
       - run: npx electron-builder --win zip portable nsis --publish never -c.win.signAndEditExecutable=true
         shell: bash
-      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         id: upload-unsigned
         with:
           name: unsigned-zip
@@ -53,7 +53,7 @@ jobs:
           github-artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
           wait-for-completion: true
           output-artifact-directory: signed
-      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: ${{ vars.SIGNPATH_ENABLED == 'true' }}
         with:
           name: signed-zip
