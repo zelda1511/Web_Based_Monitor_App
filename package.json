@@ -1,6 +1,6 @@
 {
   "name": "webase-app",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "description": "Windows system monitor and cleaner: see what is running and installed, uninstall apps, update apps and drivers, remove leftovers.",
   "author": "Webase",

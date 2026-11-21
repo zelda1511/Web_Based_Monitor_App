@@ -14,6 +14,8 @@ permissions:
 jobs:
   build:
     runs-on: windows-latest
+    permissions:
+      contents: write # only to create the draft Release on a version tag
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -52,3 +54,15 @@ jobs:
         with:
           name: signed-zip
           path: signed/*
+
+      # On a version tag: a DRAFT Release with the zip attached. Nothing is public until you press Publish on GitHub.
+      # While the SignPath step is off this zip is unsigned (Smart App Control will block it); once signing is on,
+      # attach the signed zip from the 'signed' folder instead.
+      - name: Draft GitHub Release
+        if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          gh release create "$TAG" release/*.zip --draft --verify-tag --title "Webase System Monitor ${TAG#v}"             --notes "Windows zip: unzip anywhere and run Webase System Monitor.exe. Not code-signed yet, so Windows Smart App Control or SmartScreen may block it."
