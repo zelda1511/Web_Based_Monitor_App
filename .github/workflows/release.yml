@@ -25,7 +25,9 @@ jobs:
       - run: npm test -- --watch=false
       # Edits the exe's product name/version (SignPath requires them); not done on the dev PC, where winCodeSign cannot unpack.
       - run: npx ng build
-      - run: npx electron-builder --win zip -c.win.signAndEditExecutable=true
+      # bash, because PowerShell splits -c.win... at the dot and electron-builder then reads it as a config file path.
+      - run: npx electron-builder --win zip --publish never -c.win.signAndEditExecutable=true
+        shell: bash
       - uses: actions/upload-artifact@v6
         id: upload-unsigned
         with:
