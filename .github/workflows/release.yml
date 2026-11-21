@@ -1,5 +1,7 @@
 name: Release build
 
+# Actions are pinned to a commit (a moving tag could be hijacked); Dependabot proposes updates to them.
+
 # Builds the Windows zip on every version tag (v*) and on demand.
 # Signing: the SignPath step is off until the project is approved by SignPath Foundation
 # and the secrets/ids below exist. Until then the zip is unsigned.
@@ -17,8 +19,8 @@ jobs:
     permissions:
       contents: write # only to create the draft Release on a version tag
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
           node-version: 22
           cache: npm
@@ -30,7 +32,7 @@ jobs:
       # bash, because PowerShell splits -c.win... at the dot and electron-builder then reads it as a config file path.
       - run: npx electron-builder --win zip portable nsis --publish never -c.win.signAndEditExecutable=true
         shell: bash
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         id: upload-unsigned
         with:
           name: unsigned-zip
@@ -42,7 +44,7 @@ jobs:
       # the secret SIGNPATH_API_TOKEN, and replace the three ids below with the ones SignPath gives you.
       - name: Sign with SignPath
         if: ${{ vars.SIGNPATH_ENABLED == 'true' }}
-        uses: signpath/github-action-submit-signing-request@v1
+        uses: signpath/github-action-submit-signing-request@ced31329c0317e779dad2eec2a7c3bb46ea1343e # v1
         with:
           api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
           organization-id: 'REPLACE_WITH_ORGANIZATION_ID'
@@ -51,7 +53,7 @@ jobs:
           github-artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
           wait-for-completion: true
           output-artifact-directory: signed
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         if: ${{ vars.SIGNPATH_ENABLED == 'true' }}
         with:
           name: signed-zip

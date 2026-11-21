@@ -242,6 +242,7 @@ function createWindow(route) {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
+      sandbox: true, // the default since Electron 20; spelled out so it cannot be lost. preload.js needs only contextBridge and ipcRenderer, which a sandboxed preload has.
     },
   });
   const mine = win;
