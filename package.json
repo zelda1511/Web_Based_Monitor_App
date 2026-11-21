@@ -14,7 +14,9 @@
     "test:e2e": "ng build && node e2e/smoke.js",
     "pack": "ng build && electron-builder --win dir",
     "dist": "ng build && electron-builder --win zip",
-    "dist:installer": "ng build && electron-builder --win nsis"
+    "dist:installer": "ng build && electron-builder --win nsis",
+    "dist:signed": "node scripts/require-cert.js && ng build && electron-builder --win zip -c.win.signAndEditExecutable=true",
+    "dist:installer:signed": "node scripts/require-cert.js && ng build && electron-builder --win nsis -c.win.signAndEditExecutable=true"
   },
   "private": true,
   "main": "electron/main.js",
