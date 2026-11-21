@@ -28,13 +28,15 @@ jobs:
       # Edits the exe's product name/version (SignPath requires them); not done on the dev PC, where winCodeSign cannot unpack.
       - run: npx ng build
       # bash, because PowerShell splits -c.win... at the dot and electron-builder then reads it as a config file path.
-      - run: npx electron-builder --win zip --publish never -c.win.signAndEditExecutable=true
+      - run: npx electron-builder --win zip portable nsis --publish never -c.win.signAndEditExecutable=true
         shell: bash
       - uses: actions/upload-artifact@v6
         id: upload-unsigned
         with:
           name: unsigned-zip
-          path: release/*.zip
+          path: |
+            release/*.zip
+            release/*.exe
 
       # Turn this on after SignPath approval: set the repository variable SIGNPATH_ENABLED to true,
       # the secret SIGNPATH_API_TOKEN, and replace the three ids below with the ones SignPath gives you.
@@ -65,4 +67,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
         run: |
-          gh release create "$TAG" release/*.zip --draft --verify-tag --title "Webase System Monitor ${TAG#v}"             --notes "Windows zip: unzip anywhere and run Webase System Monitor.exe. Not code-signed yet, so Windows Smart App Control or SmartScreen may block it. Free code signing provided by SignPath.io, certificate by SignPath Foundation (pending approval: this build is not signed yet)."
+          gh release create "$TAG" release/*.zip release/*.exe --draft --verify-tag --title "Webase System Monitor ${TAG#v}"             --notes "Three downloads: the Setup .exe installs the app (with an uninstaller), the Portable .exe runs without installing, and the zip holds the unpacked app (run Webase System Monitor.exe). Not code-signed yet, so Windows Smart App Control or SmartScreen may block it. Free code signing provided by SignPath.io, certificate by SignPath Foundation (pending approval: this build is not signed yet)."

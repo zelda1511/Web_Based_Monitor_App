@@ -14,7 +14,13 @@ The app can delete files and registry keys, so it is careful:
 
 ## Install and uninstall
 
-Download the zip from the [Releases](../../releases) page, unzip it anywhere, and run `Webase System Monitor.exe`. There is no installer: to uninstall, close the app and delete the folder. Settings are kept in a folder under `%APPDATA%`, and history, the activity list and logs in `%LOCALAPPDATA%\WebaseSystemMonitor`; delete those too if you want everything gone.
+Get one of these from the [Releases](../../releases) page:
+
+- **Setup `.exe`:** installs the app for your user (you can choose the folder) and adds an uninstaller. Remove it from Windows' *Installed apps*.
+- **Portable `.exe`:** runs without installing. To remove it, close the app and delete the file.
+- **Zip:** the unpacked app. Unzip anywhere and run `Webase System Monitor.exe`; to remove it, delete the folder.
+
+Settings are kept in a folder under `%APPDATA%`, and history, the activity list and logs in `%LOCALAPPDATA%\WebaseSystemMonitor`. By default the installer's uninstaller leaves them in place; delete those folders too if you want everything gone.
 
 ## Run from source
 

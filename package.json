@@ -1,6 +1,6 @@
 {
   "name": "webase-app",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "license": "MIT",
   "description": "Windows system monitor and cleaner: see what is running and installed, uninstall apps, update apps and drivers, remove leftovers.",
   "author": "Webase",
@@ -89,6 +89,9 @@
       "createDesktopShortcut": false,
       "deleteAppDataOnUninstall": false,
       "artifactName": "Webase-System-Monitor-Setup-${version}.${ext}"
+    },
+    "portable": {
+      "artifactName": "Webase-System-Monitor-Portable-${version}.${ext}"
     },
     "copyright": "Copyright (c) 2026 Webase System Monitor contributors"
   }
