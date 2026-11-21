@@ -39,6 +39,13 @@ async function getDisks() {
   return disks.list;
 }
 
+// CPU and memory only, for the history: two cheap reads that start no process.
+async function getCpuRam() {
+  const load = await si().currentLoad();
+  const total = os.totalmem();
+  return { cpu: load.currentLoad, ram: ((total - os.freemem()) / total) * 100 };
+}
+
 async function getLive() {
   const [load, list] = await Promise.all([si().currentLoad(), getDisks()]);
   const total = os.totalmem();
@@ -46,4 +53,4 @@ async function getLive() {
   return { cpu: load.currentLoad, ram: { used: total - os.freemem(), total }, disks: list, uptime: os.uptime() };
 }
 
-module.exports = { getOverview, getLive, getDisks };
+module.exports = { getOverview, getLive, getDisks, getCpuRam };

@@ -6,14 +6,8 @@
   <base href="index.html">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <script>
-    // Set the theme before the first paint so dark mode never flashes white.
-    try {
-      var m = localStorage.getItem('theme');
-      var dark = m === 'dark' || (m !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
-      document.documentElement.setAttribute('data-bs-theme', dark ? 'dark' : 'light');
-    } catch (e) {}
-  </script>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; base-uri 'self'; form-action 'none'">
+  <script src="theme-init.js"></script>
 </head>
 <body>
   <app-root></app-root>

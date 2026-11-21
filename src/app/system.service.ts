@@ -133,6 +133,18 @@ export class SystemService {
     return (await this.api()).openBackup(id);
   }
 
+  async security() {
+    return (await this.api()).getSecurity();
+  }
+
+  async history(range: '1h' | '24h') {
+    return (await this.api()).getHistory(range);
+  }
+
+  async clearHistory() {
+    return (await this.api()).clearHistory();
+  }
+
   async automation() {
     return (await this.api()).getAutomation();
   }

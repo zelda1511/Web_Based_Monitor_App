@@ -4,8 +4,8 @@ import { filterPalette, toPaletteItems } from './palette';
 const paletteItems = () => toPaletteItems(SECTIONS);
 
 describe('palette', () => {
-  it('lists all 14 pages', () => {
-    expect(paletteItems().length).toBe(14);
+  it('lists all 16 pages', () => {
+    expect(paletteItems().length).toBe(16);
   });
 
   it('matches by page or section name, every word, ignoring case', () => {
@@ -13,7 +13,8 @@ describe('palette', () => {
     expect(filterPalette(items, 'DISK').map((i) => i.path)).toEqual(['/disk']);
     expect(filterPalette(items, 'clean disk').map((i) => i.path)).toEqual(['/disk']);
     expect(filterPalette(items, 'apps').map((i) => i.path)).toContain('/catalog');
+    expect(filterPalette(items, 'hist').map((i) => i.path)).toEqual(['/history']);
     expect(filterPalette(items, 'zzz')).toEqual([]);
-    expect(filterPalette(items, '  ').length).toBe(14);
+    expect(filterPalette(items, '  ').length).toBe(16);
   });
 });

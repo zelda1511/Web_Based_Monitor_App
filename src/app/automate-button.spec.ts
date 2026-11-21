@@ -12,7 +12,7 @@ const base = (master: boolean, over: object = {}): AutoState => ({
   settings: {
     version: 1, automation: master, tray: false, startWithWindows: false,
     warn: { disk: { on: false, percent: 10 }, battery: { on: false, low: 20, urgent: 10, health: 80 }, updates: { on: false }, startup: { on: false } },
-    clean: { on: false, everyDays: 7, idleMinutes: 5, onlyOnAc: true }, quietUntil: 0, ...over,
+    clean: { on: false, everyDays: 7, idleMinutes: 5, onlyOnAc: true }, history: { on: false }, quietUntil: 0, ...over,
   },
   status: { master, jobs: {} }, recent: [], loginItem: null, packaged: true, trayRunning: false,
 });

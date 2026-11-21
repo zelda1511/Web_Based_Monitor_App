@@ -12,6 +12,8 @@ export const routes: Routes = [
     path: 'processes',
     loadComponent: () => import('./processes/processes').then((m) => m.Processes),
   },
+  { path: 'security', loadComponent: () => import('./security/security').then((m) => m.Security) },
+  { path: 'history', loadComponent: () => import('./history/history').then((m) => m.History) },
   { path: 'startup', loadComponent: () => import('./startup/startup').then((m) => m.Startup) },
   { path: 'cleanup', loadComponent: () => import('./cleanup/cleanup').then((m) => m.Cleanup) },
   { path: 'disk', loadComponent: () => import('./disk/disk').then((m) => m.DiskSpace) },

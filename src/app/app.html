@@ -1,4 +1,5 @@
 <div class="shell">
+  <button type="button" class="skip" (click)="skipToContent()">Skip to content</button>
   <header class="top">
     <div class="brand" title="Webase System Monitor">
       <app-icon name="processes" />
@@ -62,7 +63,7 @@
       </nav>
     </aside>
 
-    <main>
+    <main id="main" tabindex="-1">
       <router-outlet />
     </main>
   </div>

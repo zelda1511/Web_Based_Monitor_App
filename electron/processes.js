@@ -84,4 +84,14 @@ async function endTasks(pids) {
   });
 }
 
-module.exports = { stopSession: session.stop, getProcesses, endTasks, groupProcesses, whyNotEnd, isProtected };
+// The busiest programs by CPU share (the history writes them down when the CPU stays high). A share needs an earlier reading.
+async function topPrograms(n = 5) {
+  const groups = await getProcesses();
+  return groups
+    .filter((g) => g.cpu != null && g.cpu > 0 && g.name.toLowerCase() !== 'idle')
+    .sort((a, b) => b.cpu - a.cpu)
+    .slice(0, n)
+    .map((g) => ({ name: g.name, cpu: g.cpu, memBytes: g.memBytes }));
+}
+
+module.exports = { stopSession: session.stop, getProcesses, topPrograms, endTasks, groupProcesses, whyNotEnd, isProtected };

@@ -1,0 +1,190 @@
+<div class="page">
+  <header class="page-head">
+    <div>
+      <h1>History</h1>
+      <p class="text-body-secondary">
+        CPU and memory over the last hour or day, and what was busy when the CPU ran high. Kept on
+        this PC only.
+      </p>
+    </div>
+    <div class="page-actions">
+      <label class="form-check form-switch mb-0 me-2">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          role="switch"
+          [checked]="data()?.on === true"
+          (change)="toggle($event)"
+        />
+        <span class="form-check-label">Record</span>
+      </label>
+      <button
+        type="button"
+        class="btn btn-quiet btn-sm"
+        [disabled]="empty() && !data()?.events?.length"
+        (click)="clear()"
+      >
+        Clear
+      </button>
+    </div>
+  </header>
+
+  @if (error(); as e) {
+    <div class="alert alert-danger" role="alert">{{ e }}</div>
+  }
+
+  <div class="seg" role="group" aria-label="Time range">
+    @for (r of ranges; track r.id) {
+      <button
+        type="button"
+        [attr.aria-pressed]="range() === r.id"
+        [class.active]="range() === r.id"
+        (click)="pick(r.id)"
+      >
+        {{ r.label }}
+      </button>
+    }
+  </div>
+
+  @if (data(); as d) {
+    @if (!d.on && empty()) {
+      <section class="panel">
+        <div class="empty">
+          <strong>Recording is off.</strong>
+          <p class="mb-0 text-body-secondary">
+            Switch on Record to sample CPU and memory every 10 seconds while the app is running,
+            also from the tray. Nothing leaves this PC.
+          </p>
+        </div>
+      </section>
+    } @else {
+      <section class="panel mb-3">
+        <div class="panel-bar">
+          <h2 class="panel-title">
+            {{
+              d.range === '24h'
+                ? 'Last 24 hours, one-minute averages'
+                : 'Last hour, every 10 seconds'
+            }}
+          </h2>
+          <span class="legend"><i class="line-key cpu"></i>CPU</span>
+          <span class="legend"><i class="line-key ram"></i>Memory</span>
+        </div>
+        <div class="panel-body">
+          @if (empty()) {
+            <p class="text-body-secondary mb-0">
+              {{
+                d.on
+                  ? 'Recording has just started. The first points appear in a few seconds.'
+                  : 'Nothing was recorded in this time range.'
+              }}
+            </p>
+          } @else {
+            <div class="chart" (pointerleave)="hoverT.set(null)">
+              <svg
+                [attr.viewBox]="'0 0 ' + view.W + ' ' + view.H"
+                role="img"
+                [attr.aria-label]="
+                  'CPU and memory usage over the ' +
+                  (d.range === '24h' ? 'last 24 hours' : 'last hour')
+                "
+                (pointermove)="onMove($event)"
+              >
+                @for (t of ticks; track t.v) {
+                  <line
+                    class="grid"
+                    [attr.x1]="view.LEFT"
+                    [attr.x2]="view.RIGHT"
+                    [attr.y1]="t.y"
+                    [attr.y2]="t.y"
+                  />
+                  <text class="tick" [attr.x]="view.LEFT - 6" [attr.y]="t.y + 4" text-anchor="end">
+                    {{ t.v }}%
+                  </text>
+                }
+                <text class="tick" [attr.x]="view.LEFT" [attr.y]="view.H - 4">
+                  {{ startLabel() }}
+                </text>
+                <text class="tick" [attr.x]="view.RIGHT" [attr.y]="view.H - 4" text-anchor="end">
+                  now
+                </text>
+                @for (l of ramLines(); track $index) {
+                  <polyline class="line ram" [attr.points]="l" />
+                }
+                @for (l of cpuLines(); track $index) {
+                  <polyline class="line cpu" [attr.points]="l" />
+                }
+                @if (hovered(); as h) {
+                  <line
+                    class="crosshair"
+                    [attr.x1]="h.x"
+                    [attr.x2]="h.x"
+                    [attr.y1]="view.TOP"
+                    [attr.y2]="view.BOTTOM"
+                  />
+                  <circle class="dot cpu" [attr.cx]="h.x" [attr.cy]="h.cpuY" r="4" />
+                  <circle class="dot ram" [attr.cx]="h.x" [attr.cy]="h.ramY" r="4" />
+                }
+              </svg>
+              @if (hovered(); as h) {
+                <div
+                  class="tip"
+                  [class.flip]="h.x > view.W / 2"
+                  [style.left.%]="(h.x / view.W) * 100"
+                >
+                  <div class="text-body-secondary">{{ h.t | date: 'medium' }}</div>
+                  <div>
+                    <i class="line-key cpu"></i
+                    ><strong>{{ h.p.cpu | number: '1.0-0' }}%</strong> CPU
+                    @if (h.p.cpuMax != null) {
+                      <span class="text-body-secondary"
+                        >(busiest 10 s: {{ h.p.cpuMax | number: '1.0-0' }}%)</span
+                      >
+                    }
+                  </div>
+                  <div>
+                    <i class="line-key ram"></i
+                    ><strong>{{ h.p.ram | number: '1.0-0' }}%</strong> Memory
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-bar">
+          <h2 class="panel-title">Busy moments (CPU over 85% for 20 seconds)</h2>
+        </div>
+        @if (d.events.length) {
+          <table class="table data-table">
+            <thead>
+              <tr>
+                <th scope="col">When</th>
+                <th scope="col" class="num">CPU</th>
+                <th scope="col">Busiest programs then</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (ev of d.events; track ev.t) {
+                <tr>
+                  <td class="text-nowrap">{{ ev.t | date: 'medium' }}</td>
+                  <td class="num">{{ ev.cpu | number: '1.0-0' }}%</td>
+                  <td>{{ programs(ev) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <p class="empty text-body-secondary mb-0">
+            None in this time range. A moment is written down only when the CPU stays above 85% for
+            two readings in a row.
+          </p>
+        }
+      </section>
+    }
+  } @else if (!error()) {
+    <p class="text-body-secondary">Reading the history...</p>
+  }
+</div>

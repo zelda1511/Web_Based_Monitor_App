@@ -141,3 +141,15 @@ test('merge never changes what it is given', () => {
   merge(base, { automation: true, warn: { disk: { on: true } } });
   assert.equal(JSON.stringify(base), snapshot);
 });
+
+test('history recording is off by default, can be switched from the window, and ignores bad values', () => {
+  assert.equal(defaults().history.on, false);
+  const s = createSettings({ file: tmp() });
+  s.load();
+  assert.equal(s.patch({ history: { on: true } }).history.on, true);
+  assert.equal(s.patch({ history: { on: 'yes' } }).history.on, true, 'a non-boolean keeps the old value');
+  assert.equal(s.patch({ history: 5 }).history.on, true);
+  assert.equal(s.patch({ history: { on: false } }).history.on, false);
+  assert.equal(merge(defaults(), { history: { on: true, extra: 1 } }).history.on, true);
+  assert.deepEqual(Object.keys(merge(defaults(), { history: { on: true, extra: 1 } }).history), ['on']);
+});

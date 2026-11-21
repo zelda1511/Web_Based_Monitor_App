@@ -1,0 +1,5 @@
+# Text files are stored with LF line endings and checked out as LF, so Windows tools that write CRLF never show up as changes.
+* text=auto eol=lf
+*.png binary
+*.ico binary
+*.zip binary

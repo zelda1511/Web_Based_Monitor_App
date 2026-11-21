@@ -39,6 +39,7 @@ export const SECTIONS: Section[] = [
     icon: 'processes',
     pages: [
       { path: '/processes', label: 'Processes' },
+      { path: '/history', label: 'History' },
       { path: '/startup', label: 'Startup' },
       { path: '/battery', label: 'Battery' },
     ],
@@ -60,6 +61,7 @@ export const SECTIONS: Section[] = [
     pages: [
       { path: '/drivers', label: 'Drivers' },
       { path: '/blocked', label: 'Blocked' },
+      { path: '/security', label: 'Security' },
       { path: '/automation', label: 'Automation' },
     ],
   },
@@ -121,6 +123,11 @@ export class App {
       if (!this.palette().open() && document.querySelector('dialog[open]')) return;
       this.palette().toggle();
     }
+  }
+
+  // First Tab stop: jumps over the top bar and the nav to the page. (A #main link would change the route, since routing uses the hash.)
+  protected skipToContent() {
+    document.getElementById('main')?.focus();
   }
 
   protected target(s: Section) {

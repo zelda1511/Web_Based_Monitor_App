@@ -470,7 +470,45 @@ export interface AutoSettings {
     startup: { on: boolean };
   };
   clean: { on: boolean; everyDays: number; idleMinutes: number; onlyOnAc: boolean };
+  history: { on: boolean };
   quietUntil: number;
+}
+
+// Windows' own protection settings, read-only (electron/security.js).
+export interface SecurityCheck {
+  id: string;
+  label: string;
+  status: 'ok' | 'warn' | 'info';
+  detail: string;
+}
+
+export interface SecurityReport {
+  checks: SecurityCheck[];
+  summary: { ok: number; warn: number; info: number };
+  readAt: number;
+}
+
+// Performance history (electron/history.js): CPU and memory over the last hour (10-second samples) or day (one-minute averages).
+export interface HistoryPoint {
+  t: number;
+  cpu: number;
+  ram: number;
+  cpuMax?: number; // the busiest 10 seconds inside a one-minute average
+}
+
+// A moment when the CPU stayed high, with the busiest programs then.
+export interface HistoryEvent {
+  t: number;
+  cpu: number;
+  top: { name: string; cpu: number | null; memBytes: number | null }[];
+}
+
+export interface HistoryData {
+  on: boolean;
+  range: '1h' | '24h';
+  points: HistoryPoint[];
+  events: HistoryEvent[];
+  sampleMs: number;
 }
 
 export interface AutoJob {
@@ -517,6 +555,7 @@ export type AutoPatch = {
     startup?: { on?: boolean };
   };
   clean?: { on?: boolean; everyDays?: number; idleMinutes?: number; onlyOnAc?: boolean };
+  history?: { on?: boolean };
   quietUntil?: number;
 };
 
@@ -568,6 +607,9 @@ declare global {
       restoreBackupFolder(id: string, index: number): Promise<RestoreResult>;
       deleteBackup(id: string): Promise<{ deleted: boolean }>;
       openBackup(id: string): Promise<string>;
+      getSecurity(): Promise<SecurityReport>;
+      getHistory(range: '1h' | '24h'): Promise<HistoryData>;
+      clearHistory(): Promise<HistoryData>;
       getAutomation(): Promise<AutoState>;
       setAutomation(patch: AutoPatch): Promise<AutoState>;
       testNotification(): Promise<'shown' | 'paused' | 'failed'>;

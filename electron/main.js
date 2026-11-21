@@ -1,5 +1,6 @@
-const { app, BrowserWindow, Menu, Notification, Tray, dialog, ipcMain, nativeImage, nativeTheme, powerMonitor, shell } = require('electron');
+const { app, BrowserWindow, Menu, Notification, Tray, dialog, ipcMain, nativeImage, nativeTheme, powerMonitor, screen, session, shell } = require('electron');
 const path = require('path');
+const { pathToFileURL } = require('url');
 
 // A test copy keeps its settings, single-instance lock and cache in its own folder, so it never touches (or is stopped by) your own copy.
 if (process.env.WEBASE_DATA_DIR) app.setPath('userData', path.resolve(process.env.WEBASE_DATA_DIR));
@@ -13,9 +14,9 @@ if (!gotLock) {
 
 const crypto = require('crypto');
 const fs = require('fs/promises');
-const { getOverview, getLive, getDisks } = require('./system');
+const { getOverview, getLive, getDisks, getCpuRam } = require('./system');
 const { listSoftware, folderOf } = require('./software');
-const { getProcesses, endTasks, stopSession } = require('./processes');
+const { getProcesses, endTasks, stopSession, topPrograms } = require('./processes');
 const { listStartup, setStartup } = require('./startup');
 const { scanCleanup, deleteCleanup, defaultTargets, scanTarget, deleteTarget } = require('./cleanup');
 const { listDrivers, checkDriverUpdates, LINKS } = require('./drivers');
@@ -39,6 +40,13 @@ const { createSettings } = require('./settings');
 const { createActivity } = require('./activity');
 const { createNotifier, ROUTES } = require('./notify');
 const { createAutomation, makeCleaner } = require('./automation');
+const { isOwnFrame } = require('./ipc-guard');
+const { fitWindow } = require('./window-size');
+const { createHistory } = require('./history');
+const { getSecurity } = require('./security');
+
+const INDEX = path.join(__dirname, '../dist/webase-app/browser/index.html');
+const APP_URL = pathToFileURL(INDEX).href;
 
 // Errors go to %LOCALAPPDATA%\WebaseSystemMonitor\logs\app.log (channel and message only, never the request). 'uncaughtExceptionMonitor'
 // only watches, so Electron still shows its own error box.
@@ -50,6 +58,11 @@ app.on('child-process-gone', (_e, d) => log.crash(`${d.type} process`, `${d.reas
 const registerHandler = ipcMain.handle.bind(ipcMain);
 ipcMain.handle = (channel, fn) =>
   registerHandler(channel, async (...args) => {
+    // Only the top frame of the app's own page may call a channel (see ipc-guard.js).
+    if (!isOwnFrame(args[0], APP_URL)) {
+      log.error(channel, new Error('refused: the call did not come from the app window'));
+      throw new Error('This request was refused.');
+    }
     try {
       return await fn(...args);
     } catch (e) {
@@ -201,9 +214,15 @@ const settings = createSettings({ file: path.join(app.getPath('userData'), 'sett
 settings.load();
 // with WEBASE_DATA_DIR (test copies) the activity list stays in that folder too, so a test never writes into the real one
 const activity = createActivity({ file: path.join(process.env.WEBASE_DATA_DIR ? path.resolve(process.env.WEBASE_DATA_DIR) : defaultDir(), 'automation.jsonl') });
+// the history file stays in the same folder as the activity list (so a test copy never writes into the real one)
+const history = createHistory({
+  file: path.join(process.env.WEBASE_DATA_DIR ? path.resolve(process.env.WEBASE_DATA_DIR) : defaultDir(), 'history.json'),
+  readSample: getCpuRam,
+  topPrograms,
+  isOn: () => settings.get().history.on,
+});
 const autoCleaner = makeCleaner({ defaultTargets, scanTarget, deleteTarget });
 const iconPath = path.join(__dirname, '../build/icon.png');
-const INDEX = path.join(__dirname, '../dist/webase-app/browser/index.html');
 let win = null;
 let tray = null;
 let quitting = false;
@@ -212,10 +231,7 @@ let previewToken = null; // the cleaning can only be switched on after a preview
 
 function createWindow(route) {
   win = new BrowserWindow({
-    width: 1200,
-    height: 780,
-    minWidth: 960,
-    minHeight: 600,
+    ...fitWindow({ width: 1200, height: 780, minWidth: 960, minHeight: 600 }, screen.getPrimaryDisplay().workAreaSize),
     show: false,
     autoHideMenuBar: true,
     icon: iconPath,
@@ -332,6 +348,9 @@ function currentAutomation() {
   };
 }
 
+ipcMain.handle('sec:get', () => getSecurity()); // read-only: Windows' own protection settings, nothing changed
+ipcMain.handle('hist:get', (_e, range) => history.get(range === '24h' ? '24h' : '1h'));
+ipcMain.handle('hist:clear', () => { history.clear(); return history.get('1h'); });
 ipcMain.handle('auto:get', () => currentAutomation());
 ipcMain.handle('auto:set', (_e, patch) => {
   const p = patch && typeof patch === 'object' ? { ...patch } : {};
@@ -360,9 +379,12 @@ ipcMain.handle('app:quit', () => {
 
 app.on('second-instance', () => showWindow());
 app.on('before-quit', () => { quitting = true; });
-app.on('will-quit', () => stopSession()); // the kept PowerShell also exits by itself when its input closes
+app.on('will-quit', () => { history.stop(); stopSession(); }); // the kept PowerShell also exits by itself when its input closes
 
 app.whenReady().then(() => {
+  // The app never needs camera, microphone, location or notifications from the page (warnings use the system's own), so every request is refused.
+  session.defaultSession.setPermissionRequestHandler((_wc, _permission, callback) => callback(false));
+  session.defaultSession.setPermissionCheckHandler(() => false);
   automation = createAutomation({
     settings,
     notify: notifier.notify,
@@ -382,6 +404,7 @@ app.whenReady().then(() => {
   syncTray();
   syncLoginItem();
   automation.start();
+  history.start();
   // started by Windows at sign-in (--hidden) with the tray on: no window until the tray icon or a warning is clicked
   if (!(process.argv.includes('--hidden') && settings.get().tray)) createWindow();
 });

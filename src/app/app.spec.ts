@@ -28,7 +28,7 @@ describe('App', () => {
   });
 
   describe('sections and tabs', () => {
-    it('hold all 14 pages once each, with the routes and labels the app always had', () => {
+    it('hold all 16 pages once each, with the routes and labels the app always had', () => {
       expect(SECTIONS.flatMap((s) => s.pages.map((p) => `${p.path} ${p.label}`))).toEqual([
         '/ Dashboard',
         '/software Software',
@@ -36,6 +36,7 @@ describe('App', () => {
         '/catalog App catalog',
         '/find Find apps',
         '/processes Processes',
+        '/history History',
         '/startup Startup',
         '/battery Battery',
         '/cleanup Cleanup',
@@ -43,6 +44,7 @@ describe('App', () => {
         '/backups Backups',
         '/drivers Drivers',
         '/blocked Blocked',
+        '/security Security',
         '/automation Automation',
       ]);
     });

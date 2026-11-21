@@ -23,6 +23,7 @@ const defaults = () => ({
     startup: { on: false },
   },
   clean: { on: false, everyDays: 7, idleMinutes: 5, onlyOnAc: true },
+  history: { on: false }, // record CPU and memory every 10 seconds for a day (history.js); off until switched on
   quietUntil: 0, // warnings are paused until this time (milliseconds since 1970)
   memory: { startupBaseline: null, updatesSig: null, updatesAt: 0, healthWarnedAt: 0, warnedDisks: {}, batteryEpisode: { low: false, urgent: false }, cleanLastRun: 0 },
 });
@@ -57,6 +58,7 @@ function merge(base, input, { internal = false } = {}) {
       idleMinutes: int(c.idleMinutes, 0, 60, base.clean.idleMinutes),
       onlyOnAc: bool(c.onlyOnAc, base.clean.onlyOnAc),
     },
+    history: { on: bool(isObject(i.history) ? i.history.on : undefined, base.history.on) },
     quietUntil: Number.isFinite(i.quietUntil) && i.quietUntil >= 0 ? Math.floor(i.quietUntil) : base.quietUntil,
     memory: base.memory,
   };

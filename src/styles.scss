@@ -25,6 +25,8 @@
   --bs-border-color: #dce2ea;
   --bs-primary: #08704b;
   --bs-primary-rgb: 8, 112, 75;
+  --bs-danger: #c4314b;
+  --bs-danger-rgb: 196, 49, 75; // .text-danger follows the danger token (Bootstrap's own red fails contrast on the dark canvas)
   --bs-link-color: #08704b;
   --bs-link-color-rgb: 8, 112, 75;
   --bs-link-hover-color: #065a3c;
@@ -60,6 +62,8 @@
   --bs-border-color: #1b2634;
   --bs-primary: #3ddc97;
   --bs-primary-rgb: 61, 220, 151;
+  --bs-danger: #ff6b81;
+  --bs-danger-rgb: 255, 107, 129;
   --bs-link-color: #3ddc97;
   --bs-link-color-rgb: 61, 220, 151;
   --bs-link-hover-color: #5be6aa;
@@ -321,6 +325,24 @@ h3.h5 {
 // Bootstrap sets the progress bar colour on .progress itself (compiled as its own blue), so the accent is set here.
 .progress {
   --bs-progress-bar-bg: var(--accent);
+}
+
+// High contrast (forced colors): Windows drops background colours, so a usage bar and a graph key need a border or a system colour to stay visible.
+@media (forced-colors: active) {
+  .meter,
+  .membar {
+    border: 1px solid CanvasText;
+  }
+
+  .meter > i,
+  .membar > i {
+    forced-color-adjust: none;
+    background: Highlight;
+  }
+
+  .line-key {
+    forced-color-adjust: none;
+  }
 }
 
 // Controls
