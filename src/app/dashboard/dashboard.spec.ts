@@ -1,3 +1,4 @@
+import { provideRouter } from '@angular/router';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, vi } from 'vitest';
 import { BatteryNow } from '../api';
@@ -8,11 +9,11 @@ const overview = { os: { name: 'Windows 11', release: '26100', arch: 'x64' }, cp
 const live = { cpu: 12, ram: { used: 8e9, total: 16e9 }, disks: [{ name: 'C:', used: 100, size: 400 }], uptime: 3600 };
 const bat = (over: Partial<BatteryNow> = {}): BatteryNow => ({ present: true, percent: 100, state: 'full', health: 97.7, ...over });
 
-function setup(battery: () => Promise<BatteryNow>) {
+function setup(battery: () => Promise<BatteryNow>, liveData: typeof live = live) {
   const calls = { battery: 0 };
-  const fake = { overview: async () => overview, live: async () => live, battery: async () => { calls.battery++; return battery(); } };
+  const fake = { overview: async () => overview, live: async () => liveData, battery: async () => { calls.battery++; return battery(); } };
   TestBed.resetTestingModule();
-  TestBed.configureTestingModule({ imports: [Dashboard], providers: [{ provide: SystemService, useValue: fake }] });
+  TestBed.configureTestingModule({ imports: [Dashboard], providers: [{ provide: SystemService, useValue: fake }, provideRouter([])] });
   const fixture = TestBed.createComponent(Dashboard);
   return { fixture, el: fixture.nativeElement as HTMLElement, calls };
 }
@@ -97,6 +98,33 @@ describe('Dashboard: battery card', () => {
     await vi.advanceTimersByTimeAsync(30000);
     fixture.detectChanges();
     expect(el.textContent).toContain('80%');
+    fixture.destroy();
+  });
+});
+
+describe('Dashboard: needs attention', () => {
+  it('lists a drive that is 85% full or more and a worn battery, each with a link to the page that helps', async () => {
+    const a = setup(async () => bat());
+    await flush(a.fixture);
+    expect(a.el.querySelector('.attention')).toBeNull(); // C: is 25% full, battery health 98%
+    a.fixture.destroy();
+
+    const b = setup(async () => bat({ health: 70 }), { ...live, disks: [{ name: 'C:', used: 91, size: 100 }] });
+    await flush(b.fixture);
+    const rows = Array.from(b.el.querySelectorAll('.attention li')).map((li) => li.textContent?.replace(/\s+/g, ' ').trim());
+    expect(rows).toEqual(['Drive C: is 91% fullFree up space', 'Battery health is 70%See battery']);
+    expect(Array.from(b.el.querySelectorAll('.attention a')).map((a) => a.getAttribute('href'))).toEqual(['/disk', '/battery']);
+    b.fixture.destroy();
+  });
+
+  it('says all clear only after the battery has answered', async () => {
+    let answer: (b: BatteryNow) => void = () => {};
+    const { fixture, el } = setup(() => new Promise<BatteryNow>((r) => (answer = r)));
+    await flush(fixture);
+    expect(el.querySelector('.all-clear')).toBeNull();
+    answer(bat());
+    await flush(fixture);
+    expect(el.querySelector('.all-clear')).not.toBeNull();
     fixture.destroy();
   });
 });

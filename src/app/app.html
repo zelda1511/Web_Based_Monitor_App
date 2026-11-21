@@ -23,6 +23,10 @@
         }
       </nav>
 
+      <button type="button" class="jump" (click)="palette().toggle()" aria-label="Go to page (Ctrl+K)" title="Go to page (Ctrl+K)">
+        <app-icon name="search" /><span>Go to page</span><kbd>Ctrl K</kbd>
+      </button>
+
       <div class="appearance">
         <span class="visually-hidden" id="theme-label">Appearance</span>
         <div class="theme" role="group" aria-labelledby="theme-label">
@@ -41,3 +45,4 @@
   </div>
 </div>
 <app-ui-host />
+<app-palette [items]="paletteItems" />

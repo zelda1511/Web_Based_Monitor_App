@@ -1,0 +1,61 @@
+.pal {
+  width: min(480px, calc(100vw - 32px));
+  margin: 12vh auto auto;
+  padding: 0;
+  color: var(--bs-body-color);
+  background: var(--surface);
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--r-dlg);
+
+  &::backdrop {
+    background: rgb(0 0 0 / 0.35);
+  }
+}
+
+.pal-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--bs-border-color);
+
+  input {
+    flex: 1;
+    padding: 12px 0;
+    color: inherit;
+    background: none;
+    border: 0;
+    outline: 0;
+    font-size: 0.9375rem;
+  }
+}
+
+ul {
+  max-height: 320px;
+  margin: 0;
+  padding: 4px;
+  overflow-y: auto;
+  list-style: none;
+}
+
+li {
+  display: flex;
+  justify-content: space-between;
+  padding: 7px 10px;
+  border-radius: var(--r-ctl);
+  cursor: pointer;
+
+  &.on {
+    color: var(--accent-ink);
+    background: var(--accent-soft);
+  }
+
+  small {
+    color: var(--bs-secondary-color);
+  }
+
+  &.none {
+    color: var(--bs-secondary-color);
+    cursor: default;
+  }
+}

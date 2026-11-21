@@ -10,6 +10,22 @@
     <div class="alert alert-danger" role="alert">{{ e }}</div>
   }
 
+  @if (attention().length) {
+    <section class="panel mb-3" aria-label="Needs attention">
+      <div class="panel-bar"><h2 class="panel-title"><app-icon name="alert" />Needs attention ({{ attention().length }})</h2></div>
+      <ul class="attention">
+        @for (a of attention(); track a.id) {
+          <li [attr.data-level]="a.level">
+            <span>{{ a.text }}</span>
+            <a class="btn btn-sm btn-primary" [routerLink]="a.route">{{ a.label }}</a>
+          </li>
+        }
+      </ul>
+    </section>
+  } @else if (live() && battery()) {
+    <p class="all-clear text-body-secondary"><app-icon name="check" />Nothing needs attention right now. <a routerLink="/updates">Check for app updates</a></p>
+  }
+
   <div class="panel strip mb-3">
     <div class="stat">
       <div class="stat-label"><app-icon name="cpu" />CPU</div>

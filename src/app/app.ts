@@ -1,9 +1,10 @@
-import { Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
+import { Component, DestroyRef, computed, effect, inject, signal, untracked, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
 import { ThemeMode } from './api';
 import { Icon } from './icon';
+import { Palette, toPaletteItems } from './palette';
 import { SystemService } from './system.service';
 import { ThemeService } from './theme.service';
 import { UiHost } from './ui-host';
@@ -71,7 +72,8 @@ export function sectionOf(url: string): Section {
 }
 
 @Component({
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, Icon, UiHost],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, Icon, UiHost, Palette],
+  host: { '(document:keydown)': 'onKey($event)' },
   selector: 'app-root',
   styleUrl: './app.scss',
   templateUrl: './app.html',
@@ -107,6 +109,18 @@ export class App {
       if (WARNING_ROUTES.includes(route)) void this.router.navigateByUrl(route);
     });
     inject(DestroyRef).onDestroy(stop);
+  }
+
+  protected readonly paletteItems = toPaletteItems(SECTIONS);
+  protected readonly palette = viewChild.required(Palette);
+
+  protected onKey(e: KeyboardEvent) {
+    if ((e.ctrlKey || e.metaKey) && e.key?.toLowerCase() === 'k') {
+      e.preventDefault();
+      // A confirm dialog is a modal: never open the palette (and navigate) over a pending question. Its own dialog may close itself.
+      if (!this.palette().open() && document.querySelector('dialog[open]')) return;
+      this.palette().toggle();
+    }
   }
 
   protected target(s: Section) {

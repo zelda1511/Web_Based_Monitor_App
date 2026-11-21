@@ -1,5 +1,6 @@
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { BatteryNow, Live, Overview } from '../api';
 import { errorText, formatBytes, formatUptime } from '../format';
 import { Icon } from '../icon';
@@ -18,6 +19,14 @@ const STEP = (RIGHT - LEFT) / (MAX_SAMPLES - 1);
 
 const yOf = (percent: number) => TOP + (1 - percent / 100) * (BOTTOM - TOP);
 
+export interface Attention {
+  id: string;
+  level: 'danger' | 'warn';
+  text: string;
+  label: string;
+  route: string;
+}
+
 interface Sample {
   t: number;
   cpu: number;
@@ -25,7 +34,7 @@ interface Sample {
 }
 
 @Component({
-  imports: [DatePipe, DecimalPipe, Icon],
+  imports: [DatePipe, DecimalPipe, Icon, RouterLink],
   selector: 'app-dashboard',
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
@@ -50,6 +59,20 @@ export class Dashboard implements OnInit, OnDestroy {
 
   protected readonly cpuNow = computed(() => this.history().at(-1)?.cpu);
   protected readonly ramNow = computed(() => this.history().at(-1)?.ram);
+
+  // What needs a look, from data this page already reads (no extra scan). Updates are not checked here: that starts winget.
+  protected readonly attention = computed<Attention[]>(() => {
+    const out: Attention[] = [];
+    for (const d of this.live()?.disks ?? []) {
+      const pct = (d.used / d.size) * 100;
+      if (pct >= 85) out.push({ id: 'disk-' + d.name, level: pct >= 95 ? 'danger' : 'warn', text: `Drive ${d.name} is ${Math.round(pct)}% full`, label: 'Free up space', route: '/disk' });
+    }
+    const b = this.battery();
+    if (b?.present && b.health != null && b.health < 80) {
+      out.push({ id: 'battery', level: 'warn', text: `Battery health is ${Math.round(b.health)}%`, label: 'See battery', route: '/battery' });
+    }
+    return out;
+  });
 
   // Newest sample sits at the right edge; older ones step left.
   private readonly plot = computed(() => {

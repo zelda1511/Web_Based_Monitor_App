@@ -146,6 +146,30 @@
   }
 }
 
+.jump {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  margin-right: 8px;
+  padding: 3px 8px;
+  color: var(--bs-secondary-color);
+  background: var(--surface-2);
+  border: 0;
+  border-radius: var(--r-ctl);
+
+  &:hover { color: var(--bs-body-color); }
+
+  kbd {
+    padding: 0 4px;
+    color: inherit;
+    background: none;
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--r-ctl);
+    font-size: 0.6875rem;
+  }
+}
+
 .appearance {
   display: flex;
   align-items: center;

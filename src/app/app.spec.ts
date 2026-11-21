@@ -109,4 +109,54 @@ describe('App', () => {
       expect(stopped).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe('Ctrl+K palette', () => {
+    const ctrlK = () => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }));
+
+    async function start() {
+      // jsdom has no showModal
+      HTMLDialogElement.prototype.showModal ??= function (this: HTMLDialogElement) { this.setAttribute('open', ''); };
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({ imports: [App], providers: [provideRouter([])] });
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+      const fixture = TestBed.createComponent(App);
+      document.body.appendChild(fixture.nativeElement); // focus and showModal need the page
+      await fixture.whenStable();
+      return { fixture, navigate, el: fixture.nativeElement as HTMLElement };
+    }
+
+    it('opens, opens the chosen page on Enter, and closes', async () => {
+      const { fixture, navigate, el } = await start();
+      ctrlK();
+      fixture.detectChanges();
+      expect(el.querySelector('.pal')).not.toBeNull();
+      const input = el.querySelector('.pal input') as HTMLInputElement;
+      input.value = 'disk';
+      input.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      fixture.detectChanges();
+      expect(navigate).toHaveBeenCalledWith('/disk');
+      expect(el.querySelector('.pal')).toBeNull();
+      fixture.destroy();
+    });
+
+    it('does not open over a pending confirm dialog, and a second Ctrl+K closes it', async () => {
+      const { fixture, el } = await start();
+      const dlg = document.createElement('dialog');
+      dlg.setAttribute('open', '');
+      document.body.appendChild(dlg);
+      ctrlK();
+      fixture.detectChanges();
+      expect(el.querySelector('.pal')).toBeNull();
+      dlg.remove();
+      ctrlK();
+      fixture.detectChanges();
+      expect(el.querySelector('.pal')).not.toBeNull();
+      ctrlK();
+      fixture.detectChanges();
+      expect(el.querySelector('.pal')).toBeNull();
+      fixture.destroy();
+    });
+  });
 });

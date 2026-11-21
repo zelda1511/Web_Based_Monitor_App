@@ -112,3 +112,26 @@ svg {
     overflow-wrap: anywhere;
   }
 }
+
+.attention {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 12px;
+    border-left: 3px solid var(--warn-fill);
+
+    &[data-level='danger'] { border-left-color: var(--danger); }
+    & + li { border-top: 1px solid var(--bs-border-color); }
+  }
+}
+
+.all-clear {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
