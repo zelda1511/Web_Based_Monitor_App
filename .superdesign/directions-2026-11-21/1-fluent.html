@@ -1,0 +1,55 @@
+<!doctype html><html><head><meta charset="utf-8"><title>1 Fluent</title><style>
+*{box-sizing:border-box;margin:0}
+body{width:1200px;height:780px;overflow:hidden;font:14px/1.4 "Segoe UI Variable Text","Segoe UI",sans-serif;background:#f3f3f3;color:#1b1b1b;display:flex}
+.ic{flex:none}
+nav{width:250px;padding:14px 12px;display:flex;flex-direction:column;gap:2px}
+.me{display:flex;align-items:center;gap:12px;padding:6px 8px 16px}
+.logo{width:40px;height:40px;border-radius:50%;background:#0067c0;color:#fff;display:grid;place-items:center}
+.me b{display:block;font-size:14px}.me .sm{font-size:12px;color:#5d5d5d}
+.search{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e3e3e3;border-bottom-color:#8a8a8a;border-radius:5px;padding:7px 10px;color:#5d5d5d;margin:0 4px 12px}
+.item{display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:6px;position:relative}
+.item.on{background:#e6e6e6;font-weight:600}.item.on:before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:3px;border-radius:2px;background:#0067c0}
+.item:not(.on){color:#333}.item .ic{color:#0067c0}
+main{flex:1;padding:18px 34px 0 14px;overflow:hidden}
+h1{font:600 28px "Segoe UI Variable Display","Segoe UI";margin:6px 0 16px}
+.hero{background:#fff;border:1px solid #e5e5e5;border-radius:8px;padding:18px 20px;display:flex;align-items:center;gap:18px;margin-bottom:12px}
+.hero .pc{width:96px;height:64px;border-radius:6px;background:linear-gradient(135deg,#0067c0,#4cc2ff);display:grid;place-items:center;color:#fff}
+.hero h2{font:600 18px "Segoe UI Variable Display";margin-bottom:2px}.hero p{color:#5d5d5d;font-size:13px}
+.ok{margin-left:auto;display:flex;align-items:center;gap:8px;color:#0f7b0f;background:#dff6dd;padding:6px 12px;border-radius:999px;font-weight:600;font-size:13px}
+.row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
+.card{background:#fff;border:1px solid #e5e5e5;border-radius:8px;padding:14px 16px}
+.card .t{display:flex;align-items:center;gap:8px;color:#5d5d5d;font-size:13px}.card .t .ic{color:#0067c0}
+.big{font:600 34px/1.1 "Segoe UI Variable Display";margin:10px 0 2px}.sub{font-size:12px;color:#5d5d5d}
+.bar{height:4px;background:#e6e6e6;border-radius:2px;margin-top:12px;overflow:hidden}.bar i{display:block;height:100%;background:#0067c0;border-radius:2px}
+.two{display:grid;grid-template-columns:1.7fr 1fr;gap:12px}
+.card h3{font:600 14px "Segoe UI Variable Text";margin-bottom:10px;display:flex;justify-content:space-between}.card h3 span{font-weight:400;color:#5d5d5d;font-size:12px}
+.drv{margin-bottom:12px}.drv div{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px}.drv small{color:#5d5d5d}
+</style><script src="shared.js"></script></head><body>
+<nav>
+ <div class="me"><div class="logo"><span data-ic="pulse" data-s="22"></span></div><div><b>Webase</b><span class="sm">System Monitor</span></div></div>
+ <div class="search"><span data-ic="search" data-s="16"></span>Find a page</div>
+ <div class="item on"><span data-ic="home"></span>Overview</div>
+ <div class="item"><span data-ic="apps"></span>Apps</div>
+ <div class="item"><span data-ic="pulse"></span>Monitor</div>
+ <div class="item"><span data-ic="trash"></span>Clean up</div>
+ <div class="item"><span data-ic="gear"></span>System</div>
+</nav>
+<main>
+ <h1>Overview</h1>
+ <div class="hero"><div class="pc"><span data-ic="cpu" data-s="30"></span></div><div><h2>LENOVO LNVNB161216</h2><p>AMD Ryzen 7 7435HS · 23.7 GB memory · Windows 11 Pro</p></div><div class="ok"><span data-ic="check" data-s="16"></span>Nothing needs attention</div></div>
+ <div class="row">
+  <div class="card"><div class="t"><span data-ic="cpu" data-s="16"></span>CPU</div><div class="big">6%</div><div class="sub">8 cores, 16 threads</div><div class="bar"><i style="width:6%"></i></div></div>
+  <div class="card"><div class="t"><span data-ic="mem" data-s="16"></span>Memory</div><div class="big">51%</div><div class="sub">12.1 GB of 23.7 GB in use</div><div class="bar"><i style="width:51%"></i></div></div>
+  <div class="card"><div class="t"><span data-ic="clock" data-s="16"></span>Uptime</div><div class="big">2d 20h</div><div class="sub">Since the last restart</div></div>
+  <div class="card"><div class="t"><span data-ic="batt" data-s="16"></span>Battery</div><div class="big">96%</div><div class="sub">Plugged in · Health 98%</div><div class="bar"><i style="width:96%;background:#0f7b0f"></i></div></div>
+ </div>
+ <div class="two">
+  <div class="card"><h3>Live usage <span>last 2 minutes</span></h3><svg data-spark="640|340|#0067c0|rgba(0,103,192,.10)" style="width:100%;height:340px" preserveAspectRatio="none"></svg></div>
+  <div class="card"><h3>Storage</h3>
+   <div class="drv"><div><b>C:</b><small>363 GB free of 475 GB</small></div><div class="bar" style="margin:0"><i style="width:24%"></i></div></div>
+   <div class="drv"><div><b>D:</b><small>662 GB free of 931 GB</small></div><div class="bar" style="margin:0"><i style="width:29%"></i></div></div>
+   <div class="drv"><div><b>E:</b><small>322 GB free of 466 GB</small></div><div class="bar" style="margin:0"><i style="width:31%"></i></div></div>
+   <div style="margin-top:22px;border-top:1px solid #ececec;padding-top:12px;display:grid;gap:8px;font-size:13px"><div style="display:flex;justify-content:space-between"><span class="sub">Graphics</span>RTX 4050 Laptop · 6 GB</div><div style="display:flex;justify-content:space-between"><span class="sub">Memory</span>2 × 12 GB DDR5 4800</div><div style="display:flex;justify-content:space-between"><span class="sub">Board</span>LENOVO LNVNB161216</div></div>
+  </div>
+ </div>
+</main></body></html>

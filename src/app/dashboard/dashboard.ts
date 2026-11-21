@@ -17,6 +17,9 @@ const RIGHT = W - 12;
 const TOP = 10;
 const BOTTOM = H - 20;
 const STEP = (RIGHT - LEFT) / (MAX_SAMPLES - 1);
+// The small graphs in the CPU and Memory tiles: the same samples as the big one, 0 to 100 %, newest on the right.
+const SPARK_W = 200;
+const SPARK_H = 28;
 
 const yOf = (percent: number) => TOP + (1 - percent / 100) * (BOTTOM - TOP);
 
@@ -80,6 +83,14 @@ export class Dashboard implements OnInit, OnDestroy {
     const h = this.history();
     return h.map((s, i) => ({ t: s.t, x: RIGHT - (h.length - 1 - i) * STEP, cpuY: yOf(s.cpu), ramY: yOf(s.ram) }));
   });
+  private spark(pick: (s: Sample) => number) {
+    const h = this.history();
+    const step = SPARK_W / (MAX_SAMPLES - 1);
+    return h.map((s, i) => `${(SPARK_W - (h.length - 1 - i) * step).toFixed(1)},${(SPARK_H - (pick(s) / 100) * SPARK_H).toFixed(1)}`).join(' ');
+  }
+  protected readonly sparkBox = { W: SPARK_W, H: SPARK_H };
+  protected readonly cpuSpark = computed(() => this.spark((s) => s.cpu));
+  protected readonly ramSpark = computed(() => this.spark((s) => s.ram));
   protected readonly cpuLine = computed(() => this.plot().map((p) => `${p.x},${p.cpuY}`).join(' '));
   protected readonly ramLine = computed(() => this.plot().map((p) => `${p.x},${p.ramY}`).join(' '));
   protected readonly last = computed(() => this.plot().at(-1));

@@ -1,0 +1,41 @@
+<!doctype html><html><head><meta charset="utf-8"><title>4 Bento</title><style>
+*{box-sizing:border-box;margin:0}
+body{width:1200px;height:780px;overflow:hidden;font:14px/1.4 "Segoe UI Variable Text","Segoe UI",sans-serif;background:#14121f;color:#ece9f7;position:relative}
+.ic{flex:none}
+.head{display:flex;justify-content:space-between;align-items:flex-end;padding:26px 36px 14px}
+.head h1{font:700 30px/1 "Segoe UI Variable Display"}.head p{color:#9b95b5;margin-top:6px}
+.chip{display:flex;gap:8px;align-items:center;background:#1f2b2a;color:#7ee2b8;padding:7px 14px;border-radius:99px;font-weight:600;font-size:13px}
+.grid{padding:0 36px;display:grid;grid-template-columns:repeat(6,1fr);grid-template-rows:170px 170px 150px;gap:14px}
+.t{border-radius:24px;padding:18px 20px;position:relative;overflow:hidden}
+.t .l{display:flex;gap:8px;align-items:center;font-size:13px;opacity:.85}
+.t .v{font:700 44px/1 "Segoe UI Variable Display";margin-top:10px}.t .s{font-size:13px;opacity:.8;margin-top:4px}
+.cpu{grid-column:span 2;grid-row:span 2;background:linear-gradient(160deg,#5b4bff,#3a2fb8)}
+.cpu .v{font-size:84px;margin-top:14px}
+.cpu svg.sp{position:absolute;left:0;bottom:0;width:100%;height:150px}
+.mem{grid-column:span 2;background:#ff7a45;color:#2b1204}
+.bat{grid-column:span 2;background:#2fd08b;color:#04281a}
+.up{grid-column:span 1;background:#232036}.drv{grid-column:span 1;background:#232036}
+.hw{grid-column:span 2;grid-row:span 1;background:#1c1a2c;border:1px solid #2d2a45}
+.dsk{grid-column:span 6;background:#1c1a2c;border:1px solid #2d2a45;display:grid;grid-template-columns:repeat(3,1fr);gap:22px;align-items:end}
+.dsk .d b{font:700 26px "Segoe UI Variable Display"}.dsk .d span{display:block;color:#9b95b5;font-size:12px;margin:2px 0 10px}
+.track{height:12px;border-radius:99px;background:#2d2a45;overflow:hidden}.track i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#8f84ff,#c4bcff)}
+.hw div{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #2d2a45;font-size:13px}.hw div span:first-child{color:#9b95b5}
+.dock{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);display:flex;gap:4px;background:rgba(40,36,64,.92);border:1px solid #3a3658;padding:6px;border-radius:22px;box-shadow:0 12px 40px rgba(0,0,0,.5)}
+.dock a{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 18px;border-radius:16px;font-size:11px;color:#b6b0d0}.dock a.on{background:#5b4bff;color:#fff}
+</style><script src="shared.js"></script></head><body>
+<div class="head"><div><h1>Good evening</h1><p>Here is your PC right now.</p></div><div class="chip"><span data-ic="check" data-s="16"></span>All clear</div></div>
+<div class="grid">
+ <div class="t cpu"><div class="l"><span data-ic="cpu" data-s="18"></span>CPU · 8 cores, 16 threads</div><div class="v">6%</div><svg class="sp" data-spark="400|150|rgba(255,255,255,.9)|rgba(255,255,255,.16)" preserveAspectRatio="none"></svg></div>
+ <div class="t mem"><div class="l"><span data-ic="mem" data-s="18"></span>Memory</div><div class="v">51%</div><div class="s">12.1 GB of 23.7 GB in use</div></div>
+ <div class="t bat"><div class="l"><span data-ic="batt" data-s="18"></span>Battery</div><div class="v">96%</div><div class="s">Plugged in · health 98%</div></div>
+ <div class="t up"><div class="l"><span data-ic="clock" data-s="18"></span>Uptime</div><div class="v" style="font-size:34px">2d 20h</div><div class="s">since restart</div></div>
+ <div class="t drv"><div class="l"><span data-ic="gpu" data-s="18"></span>Graphics</div><div class="v" style="font-size:30px">RTX 4050</div><div class="s">6 GB · driver 621.14</div></div>
+ <div class="t hw"><div><span>Processor</span><span>Ryzen 7 7435HS</span></div><div><span>Memory</span><span>2 × 12 GB DDR5</span></div><div><span>System</span><span>Windows 11 Pro</span></div></div>
+ <div class="t dsk">
+  <div class="d"><b>C:</b><span>363 GB free of 475 GB</span><div class="track"><i style="width:24%"></i></div></div>
+  <div class="d"><b>D:</b><span>662 GB free of 931 GB</span><div class="track"><i style="width:29%"></i></div></div>
+  <div class="d"><b>E:</b><span>322 GB free of 466 GB</span><div class="track"><i style="width:31%"></i></div></div></div>
+ 
+</div>
+<div class="dock"><a class="on"><span data-ic="home"></span>Overview</a><a><span data-ic="apps"></span>Apps</a><a><span data-ic="pulse"></span>Monitor</a><a><span data-ic="trash"></span>Clean up</a><a><span data-ic="gear"></span>System</a></div>
+</body></html>

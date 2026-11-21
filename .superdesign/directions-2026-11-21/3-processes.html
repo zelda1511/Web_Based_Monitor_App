@@ -1,0 +1,73 @@
+<!doctype html><html><head><meta charset="utf-8"><title>3 Telemetry, Processes</title><style>
+:root{--bg:#0a0e13;--top:#0d1219;--line:#1b2430;--field:#111822;--fieldline:#223041;--mut:#6f8396;--acc:#3ddc97;--accsoft:rgba(61,220,151,.12);--side:#0c1116;--sel:#14202d;--mut2:#8fa3b8;--panel:#0f151c;--pline:#1b2634;--strong:#e8f0f7;--bar:#17212d;--warn:#e0b341;--warnsoft:rgba(224,179,65,.12);--text:#c9d4df;--mut3:#566678;--kbd:#2a3a4d;--glow:#3ddc97;--danger:#ff6b81;--dangersoft:rgba(255,107,129,.12);--rowhover:#121b25}
+[data-theme=light]{--bg:#f3f5f8;--top:#ffffff;--line:#dce2ea;--field:#ffffff;--fieldline:#cfd7e1;--mut:#566474;--acc:#0a7d54;--accsoft:rgba(10,125,84,.10);--side:#eceff4;--sel:#dcece5;--mut2:#46556a;--panel:#ffffff;--pline:#dce2ea;--strong:#0e1620;--bar:#e1e6ed;--warn:#9a6700;--warnsoft:rgba(154,103,0,.10);--text:#27323f;--mut3:#6b7787;--kbd:#b9c3d0;--glow:rgba(10,125,84,0);--danger:#b4233c;--dangersoft:rgba(180,35,60,.09);--rowhover:#f1f4f8}
+*{box-sizing:border-box;margin:0}
+body{width:1200px;height:780px;overflow:hidden;font:13px/1.4 "Segoe UI Variable Text","Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
+.m{font-family:"Cascadia Mono",Consolas,monospace}
+.ic{flex:none}
+.top{display:flex;align-items:center;gap:14px;height:46px;padding:0 18px;border-bottom:1px solid var(--line);background:var(--top)}
+.brand{display:flex;gap:8px;align-items:center;color:var(--acc);font-weight:700;letter-spacing:.04em}
+.cmd{flex:1;max-width:520px;margin:0 auto;display:flex;align-items:center;gap:10px;background:var(--field);border:1px solid var(--fieldline);border-radius:6px;padding:7px 12px;color:var(--mut)}
+.cmd b{margin-left:auto;border:1px solid var(--kbd);border-radius:4px;padding:1px 6px;font-size:11px;color:var(--mut2)}
+.live{display:flex;align-items:center;gap:7px;color:var(--acc);font-size:12px}.live i{width:7px;height:7px;border-radius:50%;background:var(--acc);box-shadow:0 0 8px var(--glow)}
+.wrap{display:grid;grid-template-columns:168px 1fr;height:calc(780px - 46px)}
+.side{border-right:1px solid var(--line);padding:14px 10px;display:flex;flex-direction:column;gap:2px;background:var(--side)}
+.side small{color:var(--mut3);font-size:10px;letter-spacing:.14em;margin:12px 8px 4px}
+.side a{padding:6px 10px;border-radius:4px;color:var(--mut2)}.side a.on{background:var(--sel);color:var(--acc);box-shadow:inset 2px 0 var(--acc)}
+.side a.sub{padding-left:24px;font-size:12px}.side a.sub.cur{color:var(--strong);font-weight:600}
+.main{padding:16px 18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.head{display:flex;align-items:flex-end;justify-content:space-between}
+.head h1{font:600 18px "Segoe UI Variable Display";color:var(--strong)}.head p{color:var(--mut);font-size:12px;margin-top:2px}
+.tools{display:flex;gap:10px;align-items:center}
+.sw{display:flex;align-items:center;gap:8px;color:var(--mut2);font-size:12px}.sw i{width:28px;height:15px;border-radius:99px;background:var(--bar);border:1px solid var(--fieldline);position:relative}.sw i:after{content:"";position:absolute;left:2px;top:2px;width:9px;height:9px;border-radius:50%;background:var(--mut)}
+.srch{display:flex;align-items:center;gap:8px;width:230px;background:var(--field);border:1px solid var(--fieldline);border-radius:5px;padding:5px 10px;color:var(--mut)}
+.btn{border:1px solid var(--fieldline);background:var(--field);border-radius:5px;padding:5px 8px;color:var(--mut2);display:grid;place-items:center}
+.strip{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.p{background:var(--panel);border:1px solid var(--pline);border-radius:6px}
+.k{padding:9px 14px 8px;min-height:74px}.k .h{color:var(--mut);font-size:10px;letter-spacing:.12em;text-transform:uppercase}.k .n{font:600 24px/1 "Cascadia Mono",Consolas,monospace;color:var(--strong);margin-top:6px}.k .n u{text-decoration:none;font-size:13px;color:var(--mut)}
+.k svg{display:block;width:100%;height:22px;margin-top:6px}
+.tbl{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+.th,.tr{display:grid;grid-template-columns:1fr 84px 70px 230px 92px;align-items:center;gap:12px;padding:0 14px}
+.th{height:30px;color:var(--mut);font-size:10px;letter-spacing:.12em;text-transform:uppercase;border-bottom:1px solid var(--pline);background:var(--side)}
+.th .r,.tr .r{text-align:right}
+.th .s{color:var(--acc)}
+.tr{height:31px;border-bottom:1px solid var(--pline)}
+.tr:last-child{border:0}
+.tr.sel{background:var(--sel);box-shadow:inset 2px 0 var(--acc)}
+.nm b{font-weight:600;color:var(--strong);font-size:13px}.nm span{display:block;color:var(--mut);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:470px;margin-top:-2px}
+.tr .m{font-size:12px}.dim{color:var(--mut3)}
+.mem{display:flex;align-items:center;gap:10px}.mem .b{flex:1;height:5px;background:var(--bar);border-radius:1px}.mem .b i{display:block;height:100%;background:var(--acc)}.mem .b i.w{background:var(--warn)}.mem .v{width:62px;text-align:right;color:var(--strong)}
+.end{border:1px solid var(--danger);color:var(--danger);background:var(--dangersoft);border-radius:4px;padding:2px 10px;font-size:12px;font-weight:600;justify-self:end}
+.foot{display:flex;justify-content:space-between;color:var(--mut);font-size:11px}
+</style><script>new URLSearchParams(location.search).get('theme')==='light'&&document.documentElement.setAttribute('data-theme','light')</script><script src="shared.js"></script></head><body>
+<div class="top"><div class="brand m"><span data-ic="pulse" data-s="18"></span>WEBASE</div><div class="cmd"><span data-ic="search" data-s="15"></span>Jump to page, process, app…<b class="m">Ctrl K</b></div><div class="live m"><i></i>LIVE 5s</div></div>
+<div class="wrap">
+ <div class="side"><small>VIEW</small><a>Overview</a><a>Apps</a><a class="on">Monitor</a><a class="sub cur">Processes</a><a class="sub">Startup</a><a class="sub">Battery</a><a>Clean up</a><a>System</a><small>RECENT</small><a>Disk space</a><a>App updates</a></div>
+ <div class="main">
+  <div class="head"><div><h1>Processes</h1><p>Programs running now. Updates every 5 seconds.</p></div>
+   <div class="tools"><div class="sw"><i></i>Windows processes</div><div class="srch"><span data-ic="search" data-s="14"></span>Search programs</div><div class="btn"><span data-ic="pulse" data-s="15"></span></div></div></div>
+  <div class="strip">
+   <div class="p k"><div class="h">Programs</div><div class="n">104</div></div>
+   <div class="p k"><div class="h">Processes</div><div class="n">298</div></div>
+   <div class="p k"><div class="h">CPU, all programs</div><div class="n">6<u>%</u></div><svg data-spark="200|22|var(--acc)|var(--accsoft)" preserveAspectRatio="none"></svg></div>
+   <div class="p k"><div class="h">Memory, programs</div><div class="n">8.4<u> GB</u></div><svg data-src="ram" data-spark="200|22|var(--warn)|var(--warnsoft)" preserveAspectRatio="none"></svg></div>
+  </div>
+  <div class="p tbl">
+   <div class="th"><div>Name</div><div class="r">Processes</div><div class="r">CPU</div><div class="s">Memory ▾</div><div></div></div>
+   <div class="tr"><div class="nm"><b>brave</b><span>Parivarik ManuRanjan | Official Trailer | Sony LIV | Streaming from 13 November</span></div><div class="r m">15</div><div class="r m">2.1%</div><div class="mem"><div class="b"><i class="w" style="width:100%"></i></div><span class="v m">3.0 GB</span></div><div></div></div>
+   <div class="tr"><div class="nm"><b>claude</b><span>Claude</span></div><div class="r m">13</div><div class="r m">0.3%</div><div class="mem"><div class="b"><i class="w" style="width:60%"></i></div><span class="v m">1.8 GB</span></div><div></div></div>
+   <div class="tr"><div class="nm"><b>Discord</b><span>Wardogs 2 | YO!O India - Discord</span></div><div class="r m">6</div><div class="r m">0.3%</div><div class="mem"><div class="b"><i style="width:16%"></i></div><span class="v m">476 MB</span></div><div></div></div>
+   <div class="tr"><div class="nm"><b>msedgewebview2</b></div><div class="r m">22</div><div class="r m">0.4%</div><div class="mem"><div class="b"><i style="width:13%"></i></div><span class="v m">404 MB</span></div><div></div></div>
+   <div class="tr"><div class="nm"><b>steamwebhelper</b><span>Steam</span></div><div class="r m">6</div><div class="r m">0.1%</div><div class="mem"><div class="b"><i style="width:10%"></i></div><span class="v m">313 MB</span></div><div></div></div>
+   <div class="tr"><div class="nm"><b>MsMpEng</b></div><div class="r m">1</div><div class="r m dim">-</div><div class="mem"><div class="b"><i style="width:9.5%"></i></div><span class="v m">292 MB</span></div><div></div></div>
+   <div class="tr"><div class="nm"><b>node</b></div><div class="r m">5</div><div class="r m">0.0%</div><div class="mem"><div class="b"><i style="width:5.7%"></i></div><span class="v m">171 MB</span></div><div></div></div>
+   <div class="tr"><div class="nm"><b>NVIDIA Overlay</b><span>NVIDIA GeForce Overlay</span></div><div class="r m">5</div><div class="r m">0.0%</div><div class="mem"><div class="b"><i style="width:5.3%"></i></div><span class="v m">159 MB</span></div><div></div></div>
+   <div class="tr"><div class="nm"><b>powershell</b></div><div class="r m">2</div><div class="r m">0.0%</div><div class="mem"><div class="b"><i style="width:5.2%"></i></div><span class="v m">158 MB</span></div><div></div></div>
+   <div class="tr"><div class="nm"><b>copilotapp</b></div><div class="r m">9</div><div class="r m">0.0%</div><div class="mem"><div class="b"><i style="width:3.7%"></i></div><span class="v m">112 MB</span></div><div></div></div>
+   <div class="tr sel"><div class="nm"><b>python</b></div><div class="r m">4</div><div class="r m">0.0%</div><div class="mem"><div class="b"><i style="width:3.5%"></i></div><span class="v m">107 MB</span></div><div><span class="end">End task</span></div></div>
+   <div class="tr"><div class="nm"><b>nvcontainer</b></div><div class="r m">5</div><div class="r m">0.0%</div><div class="mem"><div class="b"><i style="width:3.1%"></i></div><span class="v m">95.1 MB</span></div><div></div></div>
+   <div class="tr"><div class="nm"><b>NVDisplay.Container</b></div><div class="r m">2</div><div class="r m dim">-</div><div class="mem"><div class="b"><i style="width:3%"></i></div><span class="v m">93.1 MB</span></div><div></div></div>
+   <div class="tr"><div class="nm"><b>Taskmgr</b><span>Task Manager</span></div><div class="r m">1</div><div class="r m">0.4%</div><div class="mem"><div class="b"><i style="width:3%"></i></div><span class="v m">90.8 MB</span></div><div></div></div>
+     </div>
+  <div class="foot m"><span>showing 15 of 104 programs · sorted by memory</span><span>End task closes a program at once; unsaved work is lost.</span></div>
+ </div></div></body></html>

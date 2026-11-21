@@ -8,6 +8,17 @@ svg {
   height: auto;
 }
 
+// The small graph under a tile's number: thinner line, the same width at any tile size.
+svg.spark {
+  height: 28px;
+  margin-top: 0.45rem;
+
+  .line {
+    stroke-width: 1.5px;
+    vector-effect: non-scaling-stroke;
+  }
+}
+
 .grid {
   stroke: var(--bs-border-color);
   stroke-width: 1px;
@@ -109,6 +120,8 @@ svg {
 
   dd {
     margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
     overflow-wrap: anywhere;
   }
 }

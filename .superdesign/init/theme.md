@@ -1,0 +1,779 @@
+> Out of date (2026-11-21): the app now uses the "telemetry" look (top bar, side nav, green accent). See ../design-system.md and ../../CLAUDE.md for the current rules; this file describes the earlier rail, tabs and blue accent.
+
+# Theme tokens
+
+## Summary
+Font: Segoe UI Variable Text / Display, 13px base, line-height 1.4. Radius scale: --r-ctl 4px (controls), --r-card 6px (panels), --r-dlg 8px (dialogs); pills only for chips, switches, meters. One accent (blue). Flat panels with a grey header strip; tight 30px table rows. Light canvas #f5f5f7, dark canvas #1a1a1c. Tokens defined for both themes (`[data-bs-theme=dark]`).
+
+Token list (first occurrence = light, later = dark):
+- --ease-out: cubic-bezier(0.23, 1, 0.32, 1)
+- --r-ctl: 4px
+- --r-card: 6px
+- --r-dlg: 8px
+- --radius: var(--r-card)
+- --bs-body-font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif
+- --font-display: "Segoe UI Variable Display", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif
+- --bs-body-font-size: 0.8125rem
+- --bs-body-line-height: 1.4
+- --rail-bg: #e9e9ec
+- --bs-body-bg: #f5f5f7
+- --bs-body-color: #1a1a1c
+- --bs-secondary-color: #5a5a60
+- --bs-border-color: #d9d9de
+- --bs-primary: #0f6cbd
+- --bs-primary-rgb: 15, 108, 189
+- --surface: #fcfcfd
+- --surface-2: #eeeef1
+- --accent: #0f6cbd
+- --accent-hover: #115ea3
+- --accent-ink: #0b5a9e
+- --accent-soft: #e3eef9
+- --on-accent: #ffffff
+- --danger: #c4314b
+- --danger-btn: #c4314b
+- --danger-btn-hover: #a8283f
+- --danger-soft: #fbe8eb
+- --ok: #107c10
+- --ok-soft: #e6f3e6
+- --warn: #8a5a00
+- --warn-fill: #e0a100
+- --viz-cpu: #0f6cbd
+- --viz-ram: #d35a1f
+- --control-border: #85858c
+- --shadow-card: none
+- --avatar-bg: hsl(var(--h, 220) 45% 90%)
+- --avatar-ink: hsl(var(--h, 220) 55% 28%)
+- --rail-bg: #111113
+- --bs-body-bg: #1a1a1c
+- --bs-body-color: #ececee
+- --bs-secondary-color: #a3a3a9
+- --bs-border-color: #333338
+- --bs-primary: #479ef5
+- --bs-primary-rgb: 71, 158, 245
+- --surface: #212124
+- --surface-2: #2a2a2e
+- --accent: #479ef5
+- --accent-hover: #62abf5
+- --accent-ink: #8cc4fb
+- --accent-soft: rgb(71 158 245 / 0.18)
+- --on-accent: #0a0a0a
+- --danger: #f0808c
+- --danger-btn: #b82e45
+- --danger-btn-hover: #cf3a52
+- --danger-soft: #3d2227
+- --ok: #6ccb5f
+- --ok-soft: #203322
+- --warn: #f2b94b
+- --warn-fill: #f2b94b
+- --viz-cpu: #479ef5
+- --viz-ram: #ee8a52
+- --control-border: #8a8a92
+- --shadow-card: none
+- --avatar-bg: hsl(var(--h, 220) 30% 24%)
+- --avatar-ink: hsl(var(--h, 220) 70% 82%)
+- --bs-form-check-bg-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><path fill='none' stroke='%230a0a0a' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/></svg>")
+- --bs-form-switch-bg: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'><circle r='3' fill='%230a0a0a'/></svg>")
+- --bs-btn-border-radius: var(--r-ctl)
+- --bs-btn-font-weight: 500
+- --bs-btn-padding-y: 0.26rem
+- --bs-btn-padding-x: 0.75rem
+- --bs-btn-font-size: 0.8125rem
+- --bs-btn-padding-y: 0.15rem
+- --bs-btn-padding-x: 0.55rem
+- --bs-btn-font-size: 0.78rem
+- --bs-btn-color: var(--on-accent)
+- --bs-btn-bg: var(--accent)
+- --bs-btn-border-color: var(--accent)
+- --bs-btn-hover-color: var(--on-accent)
+- --bs-btn-hover-bg: var(--accent-hover)
+- --bs-btn-hover-border-color: var(--accent-hover)
+- --bs-btn-active-color: var(--on-accent)
+- --bs-btn-active-bg: var(--accent-hover)
+- --bs-btn-active-border-color: var(--accent-hover)
+- --bs-btn-disabled-color: var(--on-accent)
+- --bs-btn-disabled-bg: var(--accent)
+- --bs-btn-disabled-border-color: var(--accent)
+- --bs-btn-color: #fff
+- --bs-btn-bg: var(--danger-btn)
+- --bs-btn-border-color: var(--danger-btn)
+
+## Raw source
+### `src/styles.scss`
+```scss
+@use "bootstrap/scss/bootstrap";
+
+// Look: a compact pro tool. A narrow rail and tab bar, flat panels with header strips, tight rows, numbers first.
+// Built on Bootstrap and plain tokens (no extra package). One blue accent.
+// Shape rule: controls --r-ctl, panels --r-card, dialogs --r-dlg, and full pills only for chips, switches and meters.
+:root {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --r-ctl: 4px;
+  --r-card: 6px;
+  --r-dlg: 8px;
+  --radius: var(--r-card);
+  --bs-body-font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Segoe UI Variable Display", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --bs-body-font-size: 0.8125rem;
+  --bs-body-line-height: 1.4;
+}
+
+// Both themes redefine the same tokens, so components only use var(--token).
+[data-bs-theme="light"] {
+  --rail-bg: #e9e9ec;
+  --bs-body-bg: #f5f5f7;
+  --bs-body-color: #1a1a1c;
+  --bs-secondary-color: #5a5a60;
+  --bs-border-color: #d9d9de;
+  --bs-primary: #0f6cbd;
+  --bs-primary-rgb: 15, 108, 189;
+  --surface: #fcfcfd;
+  --surface-2: #eeeef1;
+  --accent: #0f6cbd;
+  --accent-hover: #115ea3;
+  --accent-ink: #0b5a9e;
+  --accent-soft: #e3eef9;
+  --on-accent: #ffffff;
+  --danger: #c4314b;
+  --danger-btn: #c4314b;
+  --danger-btn-hover: #a8283f;
+  --danger-soft: #fbe8eb;
+  --ok: #107c10;
+  --ok-soft: #e6f3e6;
+  --warn: #8a5a00;
+  --warn-fill: #e0a100;
+  --viz-cpu: #0f6cbd;
+  --viz-ram: #d35a1f;
+  --control-border: #85858c;
+  --shadow-card: none;
+  --avatar-bg: hsl(var(--h, 220) 45% 90%);
+  --avatar-ink: hsl(var(--h, 220) 55% 28%);
+}
+
+[data-bs-theme="dark"] {
+  --rail-bg: #111113;
+  --bs-body-bg: #1a1a1c;
+  --bs-body-color: #ececee;
+  --bs-secondary-color: #a3a3a9;
+  --bs-border-color: #333338;
+  --bs-primary: #479ef5;
+  --bs-primary-rgb: 71, 158, 245;
+  --surface: #212124;
+  --surface-2: #2a2a2e;
+  --accent: #479ef5;
+  --accent-hover: #62abf5;
+  --accent-ink: #8cc4fb;
+  --accent-soft: rgb(71 158 245 / 0.18);
+  --on-accent: #0a0a0a;
+  --danger: #f0808c;
+  --danger-btn: #b82e45;
+  --danger-btn-hover: #cf3a52;
+  --danger-soft: #3d2227;
+  --ok: #6ccb5f;
+  --ok-soft: #203322;
+  --warn: #f2b94b;
+  --warn-fill: #f2b94b;
+  --viz-cpu: #479ef5;
+  --viz-ram: #ee8a52;
+  --control-border: #8a8a92;
+  --shadow-card: none;
+  --avatar-bg: hsl(var(--h, 220) 30% 24%);
+  --avatar-ink: hsl(var(--h, 220) 70% 82%);
+
+  // Bootstrap's check mark and switch knob are white; on the light accent they need a dark one.
+  .form-check-input:checked[type="checkbox"] {
+    --bs-form-check-bg-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><path fill='none' stroke='%230a0a0a' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/></svg>");
+  }
+
+  .form-switch .form-check-input:checked {
+    --bs-form-switch-bg: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'><circle r='3' fill='%230a0a0a'/></svg>");
+  }
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  overflow: hidden; // the app shell scrolls inside <main>
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--bs-border-color) transparent;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.icon {
+  display: inline-flex;
+  flex: none;
+}
+
+// Page layout
+
+.page {
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.page-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  margin-bottom: 0.9rem;
+
+  // A long description wraps instead of pushing the buttons onto a second row.
+  > div:first-child {
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 52rem;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 650;
+    line-height: 1.25;
+    letter-spacing: -0.005em;
+  }
+
+  p {
+    margin: 0.15rem 0 0;
+    font-size: 0.8rem;
+    color: var(--bs-secondary-color);
+  }
+}
+
+.page-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+// Surfaces: flat boxes with a hairline. A panel's title becomes a header strip.
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-card);
+  overflow: clip; // keeps rounded corners without breaking sticky table headers
+}
+
+.panel-body {
+  padding: 0.7rem 0.9rem;
+}
+
+.panel-title {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0 0 0.6rem;
+  font-size: 0.8rem;
+  font-weight: 650;
+  color: var(--bs-body-color);
+
+  .icon {
+    color: var(--bs-secondary-color);
+  }
+}
+
+.panel-body > .panel-title {
+  margin: -0.7rem -0.9rem 0.7rem;
+  padding: 0.4rem 0.9rem;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--bs-border-color);
+}
+
+// A header strip for panels whose title row also holds a legend or buttons (the plain .panel-title is turned into one by .panel-body).
+.panel-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.9rem;
+  padding: 0.3rem 0.9rem;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--bs-border-color);
+
+  .panel-title {
+    margin: 0 auto 0 0;
+  }
+}
+
+// Inside a padded panel the bar reaches the panel's edges.
+.panel-body > .panel-bar {
+  margin: -0.7rem -0.9rem 0.7rem;
+}
+
+// Headings that were sized for a roomy page.
+h2.h5,
+h3.h5 {
+  font-size: 0.95rem;
+  font-weight: 650;
+}
+
+.stat {
+  padding: 0.7rem 0.9rem;
+}
+
+.stat-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--bs-secondary-color);
+}
+
+.stat-value {
+  margin: 0.2rem 0 0.05rem;
+  font-size: 1.7rem;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-sub {
+  min-height: 1.3em;
+  font-size: 0.78rem;
+}
+
+// Several stats in one flat strip, divided by hairlines.
+.strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+
+  > .stat + .stat {
+    border-left: 1px solid var(--bs-border-color);
+  }
+}
+
+// A thin usage bar under a stat or beside a drive. Width is set inline; color follows the state class.
+.meter {
+  display: block;
+  height: 4px;
+  margin-top: 0.5rem;
+  overflow: hidden;
+  background: var(--surface-2);
+  border-radius: 99px;
+
+  > i {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+    border-radius: inherit;
+    transition: width 400ms var(--ease-out);
+  }
+
+  &.warn > i { background: var(--warn-fill); }
+  &.danger > i { background: var(--danger); }
+}
+
+// Controls
+
+.btn {
+  --bs-btn-border-radius: var(--r-ctl);
+  --bs-btn-font-weight: 500;
+  --bs-btn-padding-y: 0.26rem;
+  --bs-btn-padding-x: 0.75rem;
+  --bs-btn-font-size: 0.8125rem;
+  transition: transform 160ms var(--ease-out), background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+.btn-sm {
+  --bs-btn-padding-y: 0.15rem;
+  --bs-btn-padding-x: 0.55rem;
+  --bs-btn-font-size: 0.78rem;
+}
+
+.btn-primary {
+  --bs-btn-color: var(--on-accent);
+  --bs-btn-bg: var(--accent);
+  --bs-btn-border-color: var(--accent);
+  --bs-btn-hover-color: var(--on-accent);
+  --bs-btn-hover-bg: var(--accent-hover);
+  --bs-btn-hover-border-color: var(--accent-hover);
+  --bs-btn-active-color: var(--on-accent);
+  --bs-btn-active-bg: var(--accent-hover);
+  --bs-btn-active-border-color: var(--accent-hover);
+  --bs-btn-disabled-color: var(--on-accent);
+  --bs-btn-disabled-bg: var(--accent);
+  --bs-btn-disabled-border-color: var(--accent);
+}
+
+.btn-danger {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: var(--danger-btn);
+  --bs-btn-border-color: var(--danger-btn);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: var(--danger-btn-hover);
+  --bs-btn-hover-border-color: var(--danger-btn-hover);
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: var(--danger-btn-hover);
+  --bs-btn-active-border-color: var(--danger-btn-hover);
+  --bs-btn-disabled-color: #fff;
+  --bs-btn-disabled-bg: var(--danger-btn);
+  --bs-btn-disabled-border-color: var(--danger-btn);
+}
+
+.btn-quiet {
+  --bs-btn-color: var(--bs-body-color);
+  --bs-btn-bg: var(--surface);
+  --bs-btn-border-color: var(--bs-border-color);
+  --bs-btn-hover-color: var(--bs-body-color);
+  --bs-btn-hover-bg: var(--surface-2);
+  --bs-btn-hover-border-color: var(--bs-border-color);
+  --bs-btn-active-color: var(--bs-body-color);
+  --bs-btn-active-bg: var(--surface-2);
+  --bs-btn-active-border-color: var(--bs-border-color);
+  --bs-btn-disabled-color: var(--bs-body-color);
+  --bs-btn-disabled-bg: var(--surface);
+  --bs-btn-disabled-border-color: var(--bs-border-color);
+}
+
+.btn-end {
+  --bs-btn-padding-y: 0.15rem;
+  --bs-btn-padding-x: 0.55rem;
+  --bs-btn-font-size: 0.78rem;
+  --bs-btn-color: var(--danger);
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: var(--bs-border-color);
+  --bs-btn-hover-color: var(--danger);
+  --bs-btn-hover-bg: var(--danger-soft);
+  --bs-btn-hover-border-color: var(--danger);
+  --bs-btn-active-color: var(--danger);
+  --bs-btn-active-bg: var(--danger-soft);
+  --bs-btn-active-border-color: var(--danger);
+}
+
+.icon-btn {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  color: var(--bs-secondary-color);
+  background: transparent;
+  border: 0;
+  border-radius: var(--r-ctl);
+  transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--ease-out);
+
+  &:active {
+    transform: scale(0.94);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .icon-btn:hover {
+    color: var(--bs-body-color);
+    background: var(--surface-2);
+  }
+}
+
+.form-control,
+.form-select {
+  padding-block: 0.22rem;
+  font-size: 0.8125rem;
+  color: var(--bs-body-color);
+  background-color: var(--surface);
+  border-color: var(--bs-border-color);
+  border-radius: var(--r-ctl);
+
+  &:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+}
+
+// Checkboxes and switches need an edge you can see (3:1) even when empty; text fields keep the softer border.
+.form-check-input {
+  border-color: var(--control-border);
+}
+
+.form-check-input:checked {
+  background-color: var(--accent);
+  border-color: var(--accent);
+}
+
+.form-check-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 0.2rem var(--accent-soft);
+}
+
+.search {
+  position: relative;
+  color: var(--bs-secondary-color);
+
+  .icon {
+    position: absolute;
+    top: 50%;
+    left: 0.6rem;
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+
+  input {
+    width: 16rem;
+    padding-left: 2rem;
+  }
+}
+
+.alert {
+  --bs-alert-border-radius: var(--r-card);
+  --bs-alert-border-color: transparent;
+  --bs-alert-padding-y: 0.5rem;
+  --bs-alert-padding-x: 0.8rem;
+}
+
+.alert-danger {
+  --bs-alert-color: var(--danger);
+  --bs-alert-bg: var(--danger-soft);
+}
+
+// Tables: tight rows, a header strip, numbers lined up.
+
+.data-table {
+  --bs-table-bg: transparent;
+  width: 100%;
+  margin: 0;
+
+  th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: 0.32rem 0.75rem;
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--bs-border-color);
+
+    button {
+      padding: 0;
+      font: inherit;
+      color: inherit;
+      background: none;
+      border: 0;
+    }
+  }
+
+  td {
+    padding: 0.28rem 0.75rem;
+    vertical-align: middle;
+    border-color: var(--bs-border-color);
+    font-variant-numeric: tabular-nums;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: 0;
+  }
+
+  .num {
+    text-align: right;
+  }
+
+  .actions {
+    width: 1%;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  // The letter tile only costs height in a dense table.
+  .avatar {
+    display: none;
+  }
+
+  // Buttons inside rows must not make the row taller than its text.
+  .btn {
+    --bs-btn-padding-y: 0.08rem;
+    --bs-btn-padding-x: 0.5rem;
+    --bs-btn-font-size: 0.76rem;
+    line-height: 1.25;
+  }
+
+  .icon-btn {
+    width: 26px;
+    height: 22px;
+  }
+
+  // Row actions appear on hover or keyboard focus; always visible on touch.
+  .row-action {
+    opacity: 1;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .data-table {
+    tbody tr:hover {
+      background: color-mix(in srgb, var(--bs-body-color) 5%, transparent);
+    }
+
+    .row-action {
+      opacity: 0;
+      transition: opacity 120ms ease;
+    }
+
+    tbody tr:hover .row-action,
+    tbody tr:focus-within .row-action {
+      opacity: 1;
+    }
+  }
+}
+
+.name-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+
+  .sub {
+    display: block;
+    max-width: 28rem;
+    overflow: hidden;
+    font-size: 0.74rem;
+    color: var(--bs-secondary-color);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+// App letter tile (lists that are not tables): a soft tint of the app's own hue.
+.avatar {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--avatar-ink);
+  background: var(--avatar-bg);
+  border-radius: var(--r-ctl);
+}
+
+.min-w-0 {
+  min-width: 0;
+}
+
+.sub {
+  font-size: 0.74rem;
+  color: var(--bs-secondary-color);
+}
+
+.chip {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--bs-secondary-color);
+  background: var(--surface-2);
+  border-radius: 99px;
+}
+
+.chip-warn {
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.chip-ok {
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+}
+
+// A name that selects its row. Looks like text, behaves like a button.
+.pick {
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  background: none;
+  border: 0;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.data-table tbody tr.selected {
+  background: var(--accent-soft);
+}
+
+.table.refreshing {
+  opacity: 0.55;
+  transition: opacity 150ms ease;
+}
+
+.note {
+  padding: 0.5rem 0.8rem;
+  border-bottom: 1px solid var(--bs-border-color);
+}
+
+.details {
+  position: sticky;
+  top: 0;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.2rem 1rem;
+  margin: 0 0 0.6rem;
+
+  dt {
+    font-weight: 500;
+    color: var(--bs-secondary-color);
+  }
+
+  dd {
+    margin: 0;
+  }
+}
+
+.gpu-row,
+.problem-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.2rem 1rem;
+  padding: 0.4rem 0;
+}
+
+.gpu-row {
+  justify-content: space-between;
+}
+
+.problem-row {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.empty {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--bs-secondary-color);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+```
+

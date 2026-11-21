@@ -219,9 +219,9 @@ function createWindow(route) {
     show: false,
     autoHideMenuBar: true,
     icon: iconPath,
-    // --bs-body-bg of each theme (src/styles.scss), so a resize or a slow page never shows white. It follows the theme chosen in the window
+    // --bs-body-bg of each theme (src/styles.scss: #0a0e13 dark, #f3f5f8 light), so a resize or a slow page never shows white. It follows the theme chosen in the window
     // once the page has sent it (ui:setTheme); until then, Windows' own setting.
-    backgroundColor: nativeTheme.shouldUseDarkColors ? '#1a1a1c' : '#f5f5f7',
+    backgroundColor: nativeTheme.shouldUseDarkColors ? '#0a0e13' : '#f3f5f8',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,

@@ -50,6 +50,17 @@ export class Processes implements OnInit, OnDestroy {
       .sort((a, b) => compareValues(value(a), value(b), dir));
   });
 
+  // The strip above the table counts every program, whatever the search box says.
+  protected readonly summary = computed(() => {
+    const all = this.groups();
+    const cpu = all.reduce<number | null>((t, g) => (g.cpu == null ? t : (t ?? 0) + g.cpu), null);
+    return { programs: all.length, processes: all.reduce((t, g) => t + g.pids.length, 0), cpu, memBytes: all.reduce((t, g) => t + g.memBytes, 0) };
+  });
+  // Each memory bar is scaled to the biggest row on screen.
+  protected readonly maxMem = computed(() => this.rows().reduce((m, g) => Math.max(m, g.memBytes), 1));
+  // Over 1 GB turns the bar amber.
+  protected readonly bigBytes = 1024 ** 3;
+
   ngOnInit() {
     this.poll();
   }

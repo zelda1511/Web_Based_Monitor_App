@@ -12,7 +12,11 @@
 
   @if (attention().length) {
     <section class="panel mb-3" aria-label="Needs attention">
-      <div class="panel-bar"><h2 class="panel-title"><app-icon name="alert" />Needs attention ({{ attention().length }})</h2></div>
+      <div class="panel-bar">
+        <h2 class="panel-title">
+          <app-icon name="alert" />Needs attention ({{ attention().length }})
+        </h2>
+      </div>
       <ul class="attention">
         @for (a of attention(); track a.id) {
           <li [attr.data-level]="a.level">
@@ -23,7 +27,10 @@
       </ul>
     </section>
   } @else if (live() && battery()) {
-    <p class="all-clear text-body-secondary"><app-icon name="check" />Nothing needs attention right now. <a routerLink="/updates">Check for app updates</a></p>
+    <p class="all-clear text-body-secondary">
+      <app-icon name="check" />Nothing needs attention right now.
+      <a routerLink="/updates">Check for app updates</a>
+    </p>
   }
 
   <div class="panel strip mb-3">
@@ -35,7 +42,14 @@
           {{ o.cpu.cores }} cores, {{ o.cpu.threads }} threads
         }
       </div>
-      <div class="meter" aria-hidden="true"><i [style.width.%]="cpuNow() ?? 0"></i></div>
+      <svg
+        class="spark"
+        [attr.viewBox]="'0 0 ' + sparkBox.W + ' ' + sparkBox.H"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+      >
+        <polyline class="line cpu" [attr.points]="cpuSpark()" />
+      </svg>
     </div>
     <div class="stat">
       <div class="stat-label"><app-icon name="memory" />Memory</div>
@@ -45,7 +59,14 @@
           {{ fmt(l.ram.used) }} of {{ fmt(l.ram.total) }} in use
         }
       </div>
-      <div class="meter" aria-hidden="true"><i [style.width.%]="ramNow() ?? 0"></i></div>
+      <svg
+        class="spark"
+        [attr.viewBox]="'0 0 ' + sparkBox.W + ' ' + sparkBox.H"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+      >
+        <polyline class="line ram" [attr.points]="ramSpark()" />
+      </svg>
     </div>
     <div class="stat">
       <div class="stat-label"><app-icon name="clock" />Uptime</div>
@@ -82,17 +103,33 @@
               (pointermove)="onMove($event)"
             >
               @for (t of ticks; track t.v) {
-                <line class="grid" [attr.x1]="view.LEFT" [attr.x2]="view.RIGHT" [attr.y1]="t.y" [attr.y2]="t.y" />
-                <text class="tick" [attr.x]="view.LEFT - 6" [attr.y]="t.y + 4" text-anchor="end">{{ t.v }}%</text>
+                <line
+                  class="grid"
+                  [attr.x1]="view.LEFT"
+                  [attr.x2]="view.RIGHT"
+                  [attr.y1]="t.y"
+                  [attr.y2]="t.y"
+                />
+                <text class="tick" [attr.x]="view.LEFT - 6" [attr.y]="t.y + 4" text-anchor="end">
+                  {{ t.v }}%
+                </text>
               }
               <text class="tick" [attr.x]="view.LEFT" [attr.y]="view.H - 4">2 min ago</text>
-              <text class="tick" [attr.x]="view.RIGHT" [attr.y]="view.H - 4" text-anchor="end">now</text>
+              <text class="tick" [attr.x]="view.RIGHT" [attr.y]="view.H - 4" text-anchor="end">
+                now
+              </text>
 
               <polyline class="line cpu" [attr.points]="cpuLine()" />
               <polyline class="line ram" [attr.points]="ramLine()" />
 
               @if (hovered(); as h) {
-                <line class="crosshair" [attr.x1]="h.point.x" [attr.x2]="h.point.x" [attr.y1]="view.TOP" [attr.y2]="view.BOTTOM" />
+                <line
+                  class="crosshair"
+                  [attr.x1]="h.point.x"
+                  [attr.x2]="h.point.x"
+                  [attr.y1]="view.TOP"
+                  [attr.y2]="view.BOTTOM"
+                />
                 <circle class="dot cpu" [attr.cx]="h.point.x" [attr.cy]="h.point.cpuY" r="4" />
                 <circle class="dot ram" [attr.cx]="h.point.x" [attr.cy]="h.point.ramY" r="4" />
               } @else if (last(); as p) {
@@ -101,10 +138,20 @@
               }
             </svg>
             @if (hovered(); as h) {
-              <div class="tip" [class.flip]="h.point.x > view.W / 2" [style.left.%]="(h.point.x / view.W) * 100">
+              <div
+                class="tip"
+                [class.flip]="h.point.x > view.W / 2"
+                [style.left.%]="(h.point.x / view.W) * 100"
+              >
                 <div class="text-body-secondary">{{ h.sample.t | date: 'mediumTime' }}</div>
-                <div><i class="line-key cpu"></i><strong>{{ h.sample.cpu | number: '1.0-0' }}%</strong> CPU</div>
-                <div><i class="line-key ram"></i><strong>{{ h.sample.ram | number: '1.0-0' }}%</strong> Memory</div>
+                <div>
+                  <i class="line-key cpu"></i
+                  ><strong>{{ h.sample.cpu | number: '1.0-0' }}%</strong> CPU
+                </div>
+                <div>
+                  <i class="line-key ram"></i
+                  ><strong>{{ h.sample.ram | number: '1.0-0' }}%</strong> Memory
+                </div>
               </div>
             }
           </div>
@@ -114,15 +161,26 @@
 
     <div class="col-lg-4">
       <section class="panel h-100">
-        <div class="panel-bar"><h2 class="panel-title"><app-icon name="disk" />Disk space</h2></div>
+        <div class="panel-bar">
+          <h2 class="panel-title"><app-icon name="disk" />Disk space</h2>
+        </div>
         <div class="panel-body">
           @for (d of live()?.disks; track d.name) {
             <div class="drive-row">
               <div class="d-flex justify-content-between">
                 <strong>{{ d.name }}</strong>
-                <span class="text-body-secondary">{{ fmt(d.size - d.used) }} free of {{ fmt(d.size) }}</span>
+                <span class="text-body-secondary"
+                  >{{ fmt(d.size - d.used) }} free of {{ fmt(d.size) }}</span
+                >
               </div>
-              <div [class]="'meter ' + severity(d)" role="progressbar" [attr.aria-label]="'Disk ' + d.name + ' used'" [attr.aria-valuenow]="diskPct(d)" aria-valuemin="0" aria-valuemax="100">
+              <div
+                [class]="'meter ' + severity(d)"
+                role="progressbar"
+                [attr.aria-label]="'Disk ' + d.name + ' used'"
+                [attr.aria-valuenow]="diskPct(d)"
+                aria-valuemin="0"
+                aria-valuemax="100"
+              >
                 <i [style.width.%]="diskPct(d)"></i>
               </div>
             </div>

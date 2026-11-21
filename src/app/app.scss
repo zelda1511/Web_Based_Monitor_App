@@ -1,178 +1,74 @@
+// Top bar (brand, jump field, theme) over a side nav and the page. The side nav lists the five sections; the open one shows its pages.
 .shell {
   display: flex;
+  flex-direction: column;
   height: 100vh;
 }
 
-// A narrow rail with the five sections; the pages of the open section are the tabs in the bar above the content.
-.rail {
+.top {
   display: flex;
   flex: none;
-  flex-direction: column;
   align-items: center;
-  width: 68px;
-  padding: 10px 6px;
+  gap: 14px;
+  height: 44px;
+  padding: 0 14px 0 16px;
   background: var(--rail-bg);
-  border-right: 1px solid var(--bs-border-color);
-}
-
-.brand {
-  display: grid;
-  place-items: center;
-  padding: 2px 0 12px;
-}
-
-.logo {
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  color: var(--on-accent);
-  background: var(--accent);
-  border-radius: var(--r-card);
-}
-
-.sections {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  width: 100%;
-
-  a {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-    padding: 8px 2px 7px;
-    font-size: 0.7rem;
-    font-weight: 500;
-    line-height: 1.1;
-    color: var(--bs-secondary-color);
-    text-decoration: none;
-    border-radius: var(--r-card);
-    transition: background-color 120ms ease, color 120ms ease;
-
-    &:active {
-      background: var(--surface-2);
-    }
-
-    // Open section: accent icon, strong label, a short accent bar at the edge. No motion: the rail is used all day.
-    &.active {
-      font-weight: 650;
-      color: var(--bs-body-color);
-      background: var(--surface-2);
-
-      &::before {
-        position: absolute;
-        top: 50%;
-        left: -6px;
-        width: 3px;
-        height: 22px;
-        content: '';
-        background: var(--accent);
-        border-radius: 0 99px 99px 0;
-        transform: translateY(-50%);
-      }
-
-      .icon {
-        color: var(--accent);
-      }
-    }
-  }
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .sections a:not(.active):hover {
-    color: var(--bs-body-color);
-    background: color-mix(in srgb, var(--bs-body-color) 7%, transparent);
-  }
-}
-
-.workspace {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.bar {
-  display: flex;
-  flex: none;
-  align-items: stretch;
-  justify-content: space-between;
-  gap: 1rem;
-  min-height: 40px;
-  padding: 0 14px 0 8px;
   border-bottom: 1px solid var(--bs-border-color);
 }
 
-.tabs {
+.brand {
   display: flex;
-  min-width: 0;
-
-  a {
-    position: relative;
-    display: flex;
-    flex: none;
-    align-items: center;
-    padding: 0 0.9rem;
-    font-weight: 500;
-    color: var(--bs-secondary-color);
-    white-space: nowrap;
-    text-decoration: none;
-    transition: color 120ms ease;
-
-    &.active {
-      font-weight: 650;
-      color: var(--bs-body-color);
-
-      &::after {
-        position: absolute;
-        right: 0.6rem;
-        bottom: -1px;
-        left: 0.6rem;
-        height: 2px;
-        content: '';
-        background: var(--accent);
-        border-radius: 2px 2px 0 0;
-      }
-    }
-  }
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  width: 140px;
+  color: var(--accent);
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .tabs a:not(.active):hover {
-    color: var(--bs-body-color);
-  }
+.wordmark {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 0.06em;
 }
 
 .jump {
   display: flex;
+  flex: 0 1 460px;
   align-items: center;
-  gap: 6px;
-  margin-left: auto;
-  margin-right: 8px;
-  padding: 3px 8px;
+  gap: 8px;
+  margin: 0 auto;
+  padding: 5px 10px;
   color: var(--bs-secondary-color);
-  background: var(--surface-2);
-  border: 0;
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--bs-border-color);
   border-radius: var(--r-ctl);
 
-  &:hover { color: var(--bs-body-color); }
+  &:hover {
+    color: var(--bs-body-color);
+  }
+
+  span {
+    flex: 1;
+  }
 
   kbd {
-    padding: 0 4px;
+    padding: 0 5px;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
     color: inherit;
     background: none;
-    border: 1px solid var(--bs-border-color);
+    border: 1px solid var(--control-border);
     border-radius: var(--r-ctl);
-    font-size: 0.6875rem;
   }
 }
 
 .appearance {
   display: flex;
+  flex: none;
   align-items: center;
+  width: 140px;
+  justify-content: flex-end;
 }
 
 .theme {
@@ -191,7 +87,10 @@
     background: transparent;
     border: 0;
     border-radius: 3px;
-    transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--ease-out);
+    transition:
+      background-color 150ms ease,
+      color 150ms ease,
+      transform 160ms var(--ease-out);
 
     &:active {
       transform: scale(0.96);
@@ -205,8 +104,73 @@
   }
 }
 
+.body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.side {
+  flex: none;
+  width: 168px;
+  padding: 12px 10px;
+  overflow-y: auto;
+  background: var(--rail-bg);
+  border-right: 1px solid var(--bs-border-color);
+}
+
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  a {
+    display: block;
+    padding: 6px 10px;
+    color: var(--bs-secondary-color);
+    text-decoration: none;
+    border-radius: var(--r-ctl);
+    transition:
+      background-color 120ms ease,
+      color 120ms ease;
+  }
+
+  // The open section: accent text, a tint and an edge bar. No motion: the nav is used all day.
+  .section.active {
+    font-weight: 600;
+    color: var(--accent-ink);
+    background: var(--accent-soft);
+    box-shadow: inset 2px 0 var(--accent);
+  }
+}
+
+.pages {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin: 1px 0 6px;
+
+  a {
+    padding: 4px 10px 4px 24px;
+    font-size: 0.78rem;
+
+    &.active {
+      font-weight: 600;
+      color: var(--bs-body-color);
+    }
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .sections a:not(.section.active):hover {
+    color: var(--bs-body-color);
+    background: color-mix(in srgb, var(--bs-body-color) 7%, transparent);
+  }
+}
+
 main {
   flex: 1;
+  min-width: 0;
   min-height: 0;
   padding: 16px 20px 32px;
   overflow: auto;

@@ -21,6 +21,22 @@
     <div class="alert alert-danger" role="alert">{{ e }}</div>
   }
 
+  @if (!loading()) {
+    <div class="panel strip mb-3">
+      <div class="stat"><div class="stat-label">Programs</div><div class="stat-value">{{ summary().programs }}</div></div>
+      <div class="stat"><div class="stat-label">Processes</div><div class="stat-value">{{ summary().processes }}</div></div>
+      <div class="stat">
+        <div class="stat-label">CPU, all programs</div>
+        <div class="stat-value">{{ summary().cpu == null ? '-' : (summary().cpu | number: '1.0-0') + '%' }}</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Memory, all programs</div>
+        <div class="stat-value">{{ fmt(summary().memBytes) }}</div>
+        <div class="stat-sub text-body-secondary">Shared pages count twice</div>
+      </div>
+    </div>
+  }
+
   <div class="panel">
     @if (loading()) {
       <div class="empty"><span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Reading running programs...</div>
@@ -57,7 +73,12 @@
               </td>
               <td class="num">{{ g.pids.length }}</td>
               <td class="num">{{ g.cpu == null ? '-' : (g.cpu | number: '1.1-1') + '%' }}</td>
-              <td class="num text-nowrap">{{ fmt(g.memBytes) }}</td>
+              <td class="num text-nowrap">
+                <div class="mem-cell">
+                  <span class="membar" aria-hidden="true"><i [class.big]="g.memBytes >= bigBytes" [style.width.%]="(g.memBytes / maxMem()) * 100"></i></span>
+                  <span class="mem-value">{{ fmt(g.memBytes) }}</span>
+                </div>
+              </td>
               <td class="actions">
                 @if (g.protected) {
                   <span class="text-body-secondary" title="Windows needs this process" aria-label="Protected Windows process"><app-icon name="lock" /></span>

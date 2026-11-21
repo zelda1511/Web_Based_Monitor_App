@@ -24,7 +24,7 @@ describe('App', () => {
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('.brand')?.textContent).toContain('System Monitor');
-    expect(compiled.querySelectorAll('.sections a').length).toBe(5);
+    expect(compiled.querySelectorAll('.sections a.section').length).toBe(5);
   });
 
   describe('sections and tabs', () => {
@@ -55,19 +55,22 @@ describe('App', () => {
       expect(sectionOf('/nowhere').id).toBe('overview');
     });
 
-    it('show the pages of the open section as tabs, and the rail goes back to the last page of a section', async () => {
+    it('list the pages of the open section under it, and a section goes back to its last page', async () => {
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({ imports: [App], providers: [provideRouter([{ path: '**', children: [] }])] });
       const router = TestBed.inject(Router);
       const fixture = TestBed.createComponent(App);
       const el = fixture.nativeElement as HTMLElement;
-      const tabs = () => Array.from(el.querySelectorAll('.tabs a')).map((a) => a.textContent?.trim());
-      const rail = () => Array.from(el.querySelectorAll('.sections a')).map((a) => a.getAttribute('href'));
+      const tabs = () => Array.from(el.querySelectorAll('.pages a')).map((a) => a.textContent?.trim());
+      const rail = () => Array.from(el.querySelectorAll('.sections a.section')).map((a) => a.getAttribute('href'));
 
       await router.navigateByUrl('/disk');
       await fixture.whenStable();
       expect(tabs()).toEqual(['Cleanup', 'Disk space', 'Backups']);
-      expect(el.querySelector('.sections a.active')?.textContent).toContain('Clean up');
+      expect(el.querySelector('.sections a.section.active')?.textContent).toContain('Clean up');
+      expect(el.querySelector('.sections a.section.active')?.getAttribute('aria-current')).toBe('true');
+      expect(el.querySelector('.pages a[aria-current="page"]')?.textContent).toContain('Disk space');
+      expect(el.querySelectorAll('.pages').length).toBe(1); // only the open section lists its pages
 
       await router.navigateByUrl('/updates');
       await fixture.whenStable();

@@ -1,0 +1,43 @@
+<!doctype html><html><head><meta charset="utf-8"><title>2 Health</title><style>
+*{box-sizing:border-box;margin:0}
+body{width:1200px;height:780px;overflow:hidden;font:14px/1.45 "Segoe UI Variable Text","Segoe UI",sans-serif;background:#f6f4ef;color:#1f2a24}
+.ic{flex:none}
+header{display:flex;align-items:center;justify-content:space-between;padding:18px 40px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px}.brand i{width:30px;height:30px;border-radius:9px;background:#1f6f54;color:#fff;display:grid;place-items:center}
+.tabs{display:flex;gap:4px;background:#ebe8e0;padding:4px;border-radius:999px}
+.tabs a{padding:7px 18px;border-radius:999px;color:#5a645e;font-weight:600;font-size:13px}.tabs a.on{background:#fff;color:#1f2a24;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.k{display:flex;gap:8px;color:#5a645e;align-items:center;font-size:13px}.k b{border:1px solid #d6d2c7;border-radius:6px;padding:2px 7px;font-weight:600;background:#fff}
+.hero{margin:6px 40px 0;display:grid;grid-template-columns:330px 1fr;gap:34px;background:#fff;border-radius:24px;padding:30px 38px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 12px 30px rgba(31,42,36,.06)}
+.ring{position:relative;width:240px;height:240px;margin:auto}.ring svg{transform:rotate(-90deg)}
+.ring .c{position:absolute;inset:0;display:grid;place-content:center;text-align:center}
+.ring .c b{font:700 64px/1 "Segoe UI Variable Display";color:#1f6f54}.ring .c span{color:#5a645e;font-size:14px;margin-top:6px}
+h1{font:700 30px/1.15 "Segoe UI Variable Display";margin:10px 0 6px}.lead{color:#5a645e;font-size:15px;margin-bottom:20px}
+.act{display:grid;gap:10px}
+.a{display:flex;align-items:center;gap:14px;padding:13px 16px;border-radius:14px;background:#f6f4ef}
+.a .i{width:38px;height:38px;border-radius:11px;background:#dcefe6;color:#1f6f54;display:grid;place-items:center}
+.a b{display:block}.a span{color:#5a645e;font-size:13px}.a em{margin-left:auto;font-style:normal;color:#1f6f54;font-weight:700;font-size:13px}
+.tiles{margin:18px 40px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.t{background:#fff;border-radius:18px;padding:16px 18px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.t .l{color:#5a645e;font-size:13px;display:flex;gap:8px;align-items:center}.t .v{font:700 28px "Segoe UI Variable Display";margin:6px 0 0}.t .s{color:#5a645e;font-size:12px}
+.pill{height:8px;border-radius:99px;background:#ebe8e0;margin-top:10px;overflow:hidden}.pill i{display:block;height:100%;border-radius:99px;background:#1f6f54}
+</style><script src="shared.js"></script></head><body>
+<header><div class="brand"><i><span data-ic="pulse" data-s="18"></span></i>Webase</div>
+<div class="tabs"><a class="on">Overview</a><a>Apps</a><a>Monitor</a><a>Clean up</a><a>System</a></div>
+<div class="k"><span data-ic="search" data-s="16"></span>Go to page <b>Ctrl K</b></div></header>
+<div class="hero">
+ <div class="ring"><svg width="240" height="240"><circle cx="120" cy="120" r="104" fill="none" stroke="#ebe8e0" stroke-width="16"/><circle cx="120" cy="120" r="104" fill="none" stroke="#1f6f54" stroke-width="16" stroke-linecap="round" stroke-dasharray="653" stroke-dashoffset="52"/></svg><div class="c"><b>92</b><span>PC health</span></div></div>
+ <div><h1>Your PC is in good shape.</h1><p class="lead">Nothing needs attention right now. Here is what you could do while you are here.</p>
+  <div class="act">
+   <div class="a"><div class="i"><span data-ic="trash"></span></div><div><b>Free up space</b><span>Largest drive is 24% full. Temp files and caches can still be cleared.</span></div><em>Review →</em></div>
+   <div class="a"><div class="i"><span data-ic="apps"></span></div><div><b>Check for app updates</b><span>Not checked in this session.</span></div><em>Check →</em></div>
+   <div class="a"><div class="i"><span data-ic="bolt"></span></div><div><b>Review startup apps</b><span>Fewer startup apps means a faster sign-in.</span></div><em>Open →</em></div>
+  </div></div>
+</div>
+<div class="tiles">
+ <div class="t"><div class="l"><span data-ic="cpu" data-s="16"></span>Processor</div><div class="v">6%</div><div class="s">Ryzen 7 7435HS · 16 threads</div><div class="pill"><i style="width:6%"></i></div></div>
+ <div class="t"><div class="l"><span data-ic="mem" data-s="16"></span>Memory</div><div class="v">51%</div><div class="s">12.1 of 23.7 GB in use</div><div class="pill"><i style="width:51%"></i></div></div>
+ <div class="t"><div class="l"><span data-ic="batt" data-s="16"></span>Battery</div><div class="v">96%</div><div class="s">Plugged in · health 98%</div><div class="pill"><i style="width:96%"></i></div></div>
+ <div class="t"><div class="l"><span data-ic="disk" data-s="16"></span>Storage</div><div class="v">1.3 TB free</div><div class="s">C: 363 · D: 662 · E: 322 GB</div><div class="pill"><i style="width:27%"></i></div></div>
+</div>
+<div class="tiles" style="margin-top:0;grid-template-columns:1fr"><div class="t" style="padding:14px 18px 10px"><div class="l" style="justify-content:space-between"><span style="display:flex;gap:8px;align-items:center"><span data-ic="pulse" data-s="16"></span>Live usage, last 2 minutes</span><span style="color:#1f6f54;font-weight:700">CPU</span></div><svg data-spark="1100|90|#1f6f54|rgba(31,111,84,.10)" preserveAspectRatio="none" style="width:100%;height:90px;display:block;margin-top:6px"></svg></div></div>
+</body></html>
