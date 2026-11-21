@@ -1,0 +1,50 @@
+name: Release build
+
+# Builds the Windows zip on every version tag (v*) and on demand.
+# Signing: the SignPath step is off until the project is approved by SignPath Foundation
+# and the secrets/ids below exist. Until then the zip is unsigned.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run test:main
+      - run: npm test -- --watch=false
+      - run: npm run dist
+      - uses: actions/upload-artifact@v4
+        id: upload-unsigned
+        with:
+          name: unsigned-zip
+          path: release/*.zip
+
+      # Turn this on after SignPath approval: set the repository variable SIGNPATH_ENABLED to true,
+      # the secret SIGNPATH_API_TOKEN, and replace the three ids below with the ones SignPath gives you.
+      - name: Sign with SignPath
+        if: ${{ vars.SIGNPATH_ENABLED == 'true' }}
+        uses: signpath/github-action-submit-signing-request@v1
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: 'REPLACE_WITH_ORGANIZATION_ID'
+          project-slug: 'REPLACE_WITH_PROJECT_SLUG'
+          signing-policy-slug: 'release-signing'
+          github-artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
+          wait-for-completion: true
+          output-artifact-directory: signed
+      - uses: actions/upload-artifact@v4
+        if: ${{ vars.SIGNPATH_ENABLED == 'true' }}
+        with:
+          name: signed-zip
+          path: signed/*

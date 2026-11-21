@@ -211,7 +211,7 @@ function whyNotUpgrade(row) {
 // An update of a Windows Installer app first REMOVES the old version, and a silent winget run that is not elevated fails that
 // step ("Error 1730: you must be an Administrator", seen live with PuTTY). So the whole upgrade runs elevated, behind one
 // Windows permission prompt. The id and the output file name are checked here because they end up in a command line.
-const SAFE_OUT = /^[A-Za-z]:\\[A-Za-z0-9_ .()~\\-]+$/; // "~" appears in short profile names such as C:\Users\SWAPNI~1
+const SAFE_OUT = /^[A-Za-z]:\\[A-Za-z0-9_ .()~\\-]+$/; // "~" appears in short profile names such as C:\Users\JOHNDO~1
 function elevatedCommand(verb, id, outFile) {
   if (!PACKAGE_ID.test(String(id))) throw new Error('That is not a valid package id.');
   if (!SAFE_OUT.test(outFile) || outFile.includes('..')) throw new Error('The temporary folder has characters that are not safe to use here.');
